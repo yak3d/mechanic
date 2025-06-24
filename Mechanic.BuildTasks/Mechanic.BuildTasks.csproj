@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0" PrivateAssets="all" />
+        <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="11.3.2" />
+    </ItemGroup>
+</Project>
