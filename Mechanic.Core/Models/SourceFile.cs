@@ -7,6 +7,14 @@ public class SourceFile : ProjectFile
     public required SourceFileType FileType { get; init; }
     public List<Guid> DestinationPaths { get; init; } = [];
 
+    public SourceFiles ToJson() => new SourceFiles
+    {
+        Id = this.Id.ToString(),
+        Path = this.Path,
+        FileType = this.FileType.ToJson(),
+        DestinationPaths = this.DestinationPaths.Select(path => path.ToString()).ToList()
+    };
+
     public static SourceFile FromJsonProject(SourceFiles sourceFile) => new()
     {
         Id = Guid.Parse(sourceFile.Id),

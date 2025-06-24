@@ -4,5 +4,5 @@ namespace Mechanic.Core.Contracts;
 
 public interface IProjectService
 {
-    MechanicProject Initialize(string path, string projectId);
+    public MechanicProject Initialize(string path, string projectId, Game game);
 }

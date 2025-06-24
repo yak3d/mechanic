@@ -14,6 +14,19 @@ public enum SourceFileType
 
 public static class SourceFileTypeExtensions
 {
+    public static SourceFilesFileType ToJson(this SourceFileType fileType) => fileType switch
+    {
+        SourceFileType.Fbx => SourceFilesFileType.FBX,
+        SourceFileType.Blend => SourceFilesFileType.BLEND,
+        SourceFileType.Tiff => SourceFilesFileType.TIFF,
+        SourceFileType.Wav => SourceFilesFileType.WAV,
+        SourceFileType.Psc => SourceFilesFileType.PSC,
+        SourceFileType.Other => SourceFilesFileType.OTHER,
+        _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+    };
+}
+public static class SourceFilesFileTypeExtensions
+{
     public static SourceFileType ToSourceFileType(this SourceFilesFileType jsonSourceFileType) =>
         jsonSourceFileType switch
         {

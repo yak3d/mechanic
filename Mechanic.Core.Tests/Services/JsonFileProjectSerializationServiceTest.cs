@@ -15,7 +15,8 @@ public class JsonFileProjectSerializationServiceTest(ITestOutputHelper testOutpu
         var service = new JsonFileProjectSerializationService(logger, new FileService());
         var project = new MechanicProject
         {
-            Id = "com.example.TestProject"
+            Id = "com.example.TestProject",
+            Game = Game.Fallout3
         };
         var path = $"{Path.GetTempPath()}file.json";
         
@@ -33,7 +34,8 @@ public class JsonFileProjectSerializationServiceTest(ITestOutputHelper testOutpu
         var service = new JsonFileProjectSerializationService(logger, new FileService());
         var project = new MechanicProject
         {
-            Id = "com.example.TestProject"
+            Id = "com.example.TestProject",
+            Game = Game.Fallout3
         };
         var path = $"{Path.GetTempPath()}file.json";
         

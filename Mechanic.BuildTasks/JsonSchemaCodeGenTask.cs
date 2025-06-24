@@ -24,6 +24,7 @@ public class JsonSchemaCodeGenTask : Task
         try
         {
             var schema = JsonSchema.FromFileAsync(SchemaFile).Result;
+            Console.WriteLine($"Schema: {schema.ToJson()}");
 
             var settings = new CSharpGeneratorSettings
             {
@@ -34,16 +35,29 @@ public class JsonSchemaCodeGenTask : Task
                 GenerateDefaultValues = true
             };
 
-            var generator = new CSharpGenerator(schema, settings);
-            var code = generator.GenerateFile();
-
-            var outputDir = Path.GetDirectoryName(OutputFile);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            foreach (var schemaDefinition in schema.Definitions)
             {
-                Directory.CreateDirectory(outputDir);
+                var className = schemaDefinition.Key;
+                var classSchema = schemaDefinition.Value;
+
+                var singleClassSchema = new JsonSchema
+                {
+                    Type = JsonObjectType.Object
+                };
+                classSchema.Properties.ToList().ForEach(p => singleClassSchema.Properties.Add(p));
+                
+                var generator = new CSharpGenerator(schema, settings);
+                var code = generator.GenerateFile();
+                
+                var outputDir = Path.GetDirectoryName(OutputFile);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                File.WriteAllText($"{className}.cs", code);
             }
 
-            File.WriteAllText(OutputFile, code);
             return true;
         }
         catch (Exception ex)

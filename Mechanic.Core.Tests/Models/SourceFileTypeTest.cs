@@ -62,4 +62,49 @@ public class SourceFileTypeTest
                     defaultValue.ToSourceFileType());
             }
         }
+        
+        [Theory]
+        [InlineData(SourceFileType.Fbx, SourceFilesFileType.FBX)]
+        [InlineData(SourceFileType.Blend, SourceFilesFileType.BLEND)]
+        [InlineData(SourceFileType.Tiff, SourceFilesFileType.TIFF)]
+        [InlineData(SourceFileType.Wav, SourceFilesFileType.WAV)]
+        [InlineData(SourceFileType.Psc, SourceFilesFileType.PSC)]
+        [InlineData(SourceFileType.Other, SourceFilesFileType.OTHER)]
+        public void ToJson_AllValidValues_ShouldReturnExpectedMapping(
+            SourceFileType expected, 
+            SourceFilesFileType input)
+        {
+            var result = input.ToSourceFileType();
+    
+            result.ShouldBe(expected);
+        }
+        
+        [Fact]
+        public void ToJson_CastFromInt_ShouldThrowForInvalidValues()
+        {
+            Should.Throw<ArgumentOutOfRangeException>(() => 
+                ((SourceFileType)100).ToJson());
+            
+            Should.Throw<ArgumentOutOfRangeException>(() => 
+                ((SourceFileType)(-5)).ToJson());
+            
+            Should.Throw<ArgumentOutOfRangeException>(() => 
+                ((SourceFileType)int.MaxValue).ToJson());
+        }
+
+        [Fact]
+        public void ToJson_DefaultEnumValue_ShouldHandleProperly()
+        {
+            var defaultValue = default(SourceFileType);
+            
+            if (Enum.IsDefined(typeof(SourceFileType), defaultValue))
+            {
+                Should.NotThrow(() => defaultValue.ToJson());
+            }
+            else
+            {
+                Should.Throw<ArgumentOutOfRangeException>(() => 
+                    defaultValue.ToJson());
+            }
+        }
 }

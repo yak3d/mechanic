@@ -22,7 +22,7 @@ public class GameFileTest
         result.ShouldNotBeNull();
         result.Id.ShouldBe(testGuid);
         result.Path.ShouldBe("game/materials/metal.mat");
-        result.GameFileType.ShouldBe(GameFileType.Mat);
+        result.GameFileType.ShouldBe(GameFileType.Material);
     }
    
     [Fact]
@@ -37,7 +37,7 @@ public class GameFileTest
 
         var result = GameFile.FromJson(gameFiles);
 
-        result.GameFileType.ShouldBe(GameFileType.Mat);
+        result.GameFileType.ShouldBe(GameFileType.Material);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class GameFileTest
 
         var result = GameFile.FromJson(gameFiles);
 
-        result.GameFileType.ShouldBe(GameFileType.Dds);
+        result.GameFileType.ShouldBe(GameFileType.DirectDrawSurface);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class GameFileTest
 
         var result = GameFile.FromJson(gameFiles);
 
-        result.GameFileType.ShouldBe(GameFileType.Wem);
+        result.GameFileType.ShouldBe(GameFileType.WwiseEncodedMedia);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class GameFileTest
 
         var result = GameFile.FromJson(gameFiles);
 
-        result.GameFileType.ShouldBe(GameFileType.Pex);
+        result.GameFileType.ShouldBe(GameFileType.PapyrusExecutable);
     }
     
     [Fact]

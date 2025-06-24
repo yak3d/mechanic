@@ -29,7 +29,7 @@ try
         Namespace = namespaceName,
         ClassStyle = CSharpClassStyle.Poco,
         GenerateDataAnnotations = true,
-        GenerateJsonMethods = false,
+        GenerateJsonMethods = true,
         GenerateDefaultValues = true
     };
 

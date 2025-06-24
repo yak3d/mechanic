@@ -8,12 +8,13 @@ public class ProjectService(
     ILogger<ProjectService> logger,
     IProjectSerializationService<string> serializationService) : IProjectService
 {
-    public MechanicProject Initialize(string path, string projectId)
+    public MechanicProject Initialize(string path, string projectId, Game game)
     {
-        logger.LogInformation("Initializing project {ProjectId} in path {path}", projectId, path);
+        logger.LogInformation("Initializing project {ProjectId} in path {Path}", projectId, path);
         var project = new MechanicProject
         {
-            Id = projectId
+            Id = projectId,
+            Game = game
         };
 
         serializationService.SerializeProject(project, path);

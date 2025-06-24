@@ -16,11 +16,17 @@
         "net.company.project.module"
       ]
     },
+    "game": {
+      "description": "The game that this mod project is for.",
+      "type": "string",
+      "enum": ["TES4Oblivion", "TES5Skyrim", "SkyrimSpecialEdition", "Fallout3", "FalloutNewVegas", "Fallout4", "Starfield"]
+    },
     "sourceFiles": {
       "description": "List of files tracked by the project",
       "type": "array",
       "items": {
         "type": "object",
+        "title": "SourceFile",
         "allOf": [
           {
             "$ref": "#/$defs/fileIdentifier"
@@ -80,6 +86,7 @@
   },
   "required": [
     "id",
+    "game",
     "sourceFiles",
     "gameFiles"
   ],
@@ -97,6 +104,37 @@
           "type": "string"
         }
       }
+    },
+    "sourceFile": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/fileIdentifier"
+        },
+        {
+          "properties": {
+            "fileType": {
+              "title": "SourceFileType",
+              "description": "Denotes the filetype for the source file.",
+              "enum": [
+                "FBX",
+                "BLEND",
+                "TIFF",
+                "WAV",
+                "PSC",
+                "OTHER"
+              ]
+            },
+            "destinationPaths": {
+              "type": "array",
+              "description": "A list of output file IDs that are spawned from this source file",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
