@@ -4,6 +4,6 @@ namespace Mechanic.Core.Contracts;
 
 public interface IProjectSerializationService<T>
 {
-    MechanicProject DeserializeProject(T source);
-    void SerializeProject(MechanicProject project, T destination);
+    public MechanicProject DeserializeProject(T source);
+    public void SerializeProject(MechanicProject project, T destination);
 }

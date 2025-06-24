@@ -22,6 +22,11 @@
     <Folder Include="Generated\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="$(JsonSchemaOutputFile)" />
+    <None Include="$(JsonSchemaOutputFile)" Condition="Exists('$(JsonSchemaOutputFile)')" />
+  </ItemGroup>
+  
   <Target Name="GenerateFromSchema" BeforeTargets="CoreCompile" Condition="Exists('$(JsonSchemaFile)')">
     <Message Text="🚀 Starting JSON Schema code generation..." Importance="high" />
 

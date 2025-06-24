@@ -139,4 +139,57 @@ public class GameFileTest
 
         Should.Throw<ArgumentNullException>(() => GameFile.FromJson(gameFiles));
     }
+    [Fact]
+    public void ToJson_ShouldReturnCorrectJsonObject()
+    {
+        var gameFile = new GameFile
+        {
+            Id = Guid.Parse("12345678-1234-1234-1234-123456789012"),
+            Path = "/test/path/file.dds",
+            GameFileType = GameFileType.DirectDrawSurface
+        };
+
+        var result = gameFile.ToJson();
+
+        result.Id.ShouldBe("12345678-1234-1234-1234-123456789012");
+        result.Path.ShouldBe("/test/path/file.dds");
+        result.FileType.ShouldBe(gameFile.GameFileType.ToJson());
+    }
+
+    [Theory]
+    [InlineData(GameFileType.Material, "/materials/wood.nif")]
+    [InlineData(GameFileType.DirectDrawSurface, "/textures/armor.dds")]
+    [InlineData(GameFileType.WwiseEncodedMedia, "/sounds/music.wem")]
+    [InlineData(GameFileType.PapyrusExecutable, "/scripts/quest.pex")]
+    public void ToJson_WithDifferentFileTypes_ShouldPreserveAllProperties(GameFileType fileType, string path)
+    {
+        var id = Guid.NewGuid();
+        var gameFile = new GameFile
+        {
+            Id = id,
+            Path = path,
+            GameFileType = fileType
+        };
+
+        var result = gameFile.ToJson();
+
+        result.Id.ShouldBe(id.ToString());
+        result.Path.ShouldBe(path);
+        result.FileType.ShouldBe(fileType.ToJson());
+    }
+
+    [Fact]
+    public void ToJson_WithEmptyGuid_ShouldReturnEmptyGuidString()
+    {
+        var gameFile = new GameFile
+        {
+            Id = Guid.Empty,
+            Path = "/test/path",
+            GameFileType = GameFileType.Material
+        };
+
+        var result = gameFile.ToJson();
+
+        result.Id.ShouldBe("00000000-0000-0000-0000-000000000000");
+    }
 }

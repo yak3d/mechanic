@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Mechanic.CLI.Application;
+﻿using Mechanic.CLI.Application;
 using Mechanic.CLI.Commands;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Services;
@@ -20,27 +18,6 @@ registrations.AddSingleton<IProjectSerializationService<string>, JsonFileProject
 registrations.AddSingleton<IProjectService, ProjectService>();
 
 var registrar = new TypeRegistrar(registrations);
-
-var serviceProvider = registrations.BuildServiceProvider();
-try
-{
-    var fileService = serviceProvider.GetRequiredService<IFileService>();
-    Console.WriteLine("✓ IFileService resolved");
-    
-    var serializationService = serviceProvider.GetRequiredService<IProjectSerializationService<string>>();
-    Console.WriteLine("✓ IProjectSerializationService<string> resolved");
-    
-    var projectService = serviceProvider.GetRequiredService<IProjectService>();
-    Console.WriteLine("✓ IProjectService resolved");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"❌ Failed: {ex.Message}");
-    if (ex.InnerException != null)
-    {
-        Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-    }
-}
 
 var app = new CommandApp(registrar);
 

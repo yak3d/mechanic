@@ -7,7 +7,7 @@ public class SourceFile : ProjectFile
     public required SourceFileType FileType { get; init; }
     public List<Guid> DestinationPaths { get; init; } = [];
 
-    public SourceFiles ToJson() => new SourceFiles
+    public SourceFiles ToJson() => new()
     {
         Id = this.Id.ToString(),
         Path = this.Path,
