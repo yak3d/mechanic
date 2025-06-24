@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Mechanic.Core.Services;
 
-public class JsonFileProjectSerializationService(ILogger logger, IFileService fileService) : IProjectSerializationService<string>
+public class JsonFileProjectSerializationService(ILogger<JsonFileProjectSerializationService> logger, IFileService fileService) : IProjectSerializationService<string>
 {
     public MechanicProject DeserializeProject(string source)
     {

@@ -29,7 +29,7 @@ public class JsonFileProjectSerializationServiceTest(ITestOutputHelper testOutpu
     [Fact]
     public void Can_Serialize_Project_To_JsonFile()
     {
-        var logger = CreateLogger<JsonFileProjectSerializationServiceTest>();
+        var logger = CreateLogger<JsonFileProjectSerializationService>();
         var service = new JsonFileProjectSerializationService(logger, new FileService());
         var project = new MechanicProject
         {
