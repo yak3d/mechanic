@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 
 namespace Mechanic.Core.Services;
 
+using Infrastructure.Logging;
 using Newtonsoft.Json.Serialization;
 
 public class JsonFileProjectSerializationService(ILogger<JsonFileProjectSerializationService> logger, IFileService fileService) : IProjectSerializationService<string>
@@ -18,8 +19,7 @@ public class JsonFileProjectSerializationService(ILogger<JsonFileProjectSerializ
 
     public void SerializeProject(MechanicProject project, string destination)
     {
-        // todo: needs to convert to the generated types first before writing
-        logger.LogInformation("Serializing project {id} to {destination}", project.Id, destination);
+        logger.ProjectSerializing(project.Id, destination);
         fileService.WriteAllText(
             destination,
             JsonConvert.SerializeObject(

@@ -4,13 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Mechanic.Core.Services;
 
+using Infrastructure.Logging;
+
 public class ProjectService(
     ILogger<ProjectService> logger,
     IProjectSerializationService<string> serializationService) : IProjectService
 {
     public MechanicProject Initialize(string path, string projectId, Game game)
     {
-        logger.LogInformation("Initializing project {ProjectId} in path {Path}", projectId, path);
+        logger.ProjectInitializing(projectId, path);
         var project = new MechanicProject
         {
             Id = projectId,
