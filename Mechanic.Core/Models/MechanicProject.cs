@@ -8,8 +8,10 @@ public class MechanicProject
     public string Schema { get; } = "Mechanic.Core/ProjectFileSchema.json";
     public required string Id { get; init; }
     public required Game Game { get; init; }
-    public List<SourceFile> SourceFiles { get; set; } = [];
-    public List<GameFile> DestinationFiles { get; set; } = [];
+    public List<SourceFile> SourceFiles { get; private init; } = [];
+    public List<GameFile> DestinationFiles { get; init; } = [];
+
+    public void AddSourceFile(SourceFile sourceFile) => this.SourceFiles.Add(sourceFile);
 
     public Project.Models.Json.MechanicProject ToJson() => new()
     {

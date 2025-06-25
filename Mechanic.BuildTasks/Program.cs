@@ -30,7 +30,8 @@ try
         ClassStyle = CSharpClassStyle.Poco,
         GenerateDataAnnotations = true,
         GenerateJsonMethods = true,
-        GenerateDefaultValues = true
+        GenerateDefaultValues = true,
+        JsonLibrary = CSharpJsonLibrary.SystemTextJson
     };
 
     var generator = new CSharpGenerator(schema, settings);
@@ -38,7 +39,6 @@ try
 
     Console.WriteLine($"✅ Generated {code.Length} characters of code");
 
-    // Ensure output directory exists
     var outputDir = Path.GetDirectoryName(outputFile);
     if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
     {

@@ -27,34 +27,37 @@
       "items": {
         "type": "object",
         "title": "SourceFile",
-        "allOf": [
-          {
-            "$ref": "#/$defs/fileIdentifier"
+        "properties": {
+          "id": {
+            "description": "The identifier for the file, which is a UUID v4",
+            "type": "string",
+            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
           },
-          {
-            "properties": {
-              "fileType": {
-                "title": "SourceFileType",
-                "description": "Denotes the filetype for the source file.",
-                "enum": [
-                  "FBX",
-                  "BLEND",
-                  "TIFF",
-                  "WAV",
-                  "PSC",
-                  "OTHER"
-                ]
-              },
-              "destinationPaths": {
-                "type": "array",
-                "description": "A list of output file IDs that are spawned from this source file",
-                "items": {
-                  "type": "string"
-                }
-              }
+          "path": {
+            "description": "Relative path to the file",
+            "type": "string"
+          },
+          "fileType": {
+            "title": "SourceFileType",
+            "description": "Denotes the filetype for the source file.",
+            "type": "string",
+            "enum": [
+              "FBX",
+              "BLEND",
+              "TIFF",
+              "WAV",
+              "PSC",
+              "OTHER"
+            ]
+          },
+          "destinationPaths": {
+            "type": "array",
+            "description": "A list of output file IDs that are spawned from this source file",
+            "items": {
+              "type": "string"
             }
           }
-        ]
+        }
       }
     },
     "gameFiles": {
@@ -62,25 +65,28 @@
       "type": "array",
       "items": {
         "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/$defs/fileIdentifier"
+        "properties": {
+          "id": {
+            "description": "The identifier for the file, which is a UUID v4",
+            "type": "string",
+            "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
           },
-          {
-            "properties": {
-              "fileType": {
-                "title": "GameFileType",
-                "description": "Denotes the filetype for the game file.",
-                "enum": [
-                  "MAT",
-                  "DDS",
-                  "WEM",
-                  "PEX"
-                ]
-              }
-            }
+          "path": {
+            "description": "Relative path to the file",
+            "type": "string"
+          },
+          "fileType": {
+            "title": "GameFileType",
+            "description": "Denotes the filetype for the game file.",
+            "type": "string",
+            "enum": [
+              "MAT",
+              "DDS",
+              "WEM",
+              "PEX"
+            ]
           }
-        ]
+        }
       }
     }
   },
@@ -104,37 +110,6 @@
           "type": "string"
         }
       }
-    },
-    "sourceFile": {
-      "type": "object",
-      "allOf": [
-        {
-          "$ref": "#/$defs/fileIdentifier"
-        },
-        {
-          "properties": {
-            "fileType": {
-              "title": "SourceFileType",
-              "description": "Denotes the filetype for the source file.",
-              "enum": [
-                "FBX",
-                "BLEND",
-                "TIFF",
-                "WAV",
-                "PSC",
-                "OTHER"
-              ]
-            },
-            "destinationPaths": {
-              "type": "array",
-              "description": "A list of output file IDs that are spawned from this source file",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      ]
     }
   }
 }

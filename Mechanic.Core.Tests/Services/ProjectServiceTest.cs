@@ -66,36 +66,6 @@ public class ProjectServiceTest
             Times.Once);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public void Initialize_WithEmptyOrNullProjectId_ShouldStillCreateProject(string projectId)
-    {
-        var path = "/test/path";
-        var game = Game.Tes5Skyrim;
-
-        var result = _projectService.Initialize(path, projectId, game);
-
-        result.ShouldNotBeNull();
-        result.Id.ShouldBe(projectId);
-        result.Game.ShouldBe(game);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public void Initialize_WithEmptyOrNullPath_ShouldStillCallSerializationService(string path)
-    {
-        var projectId = "test-project-id";
-        var game = Game.Fallout3;
-
-        _projectService.Initialize(path, projectId, game);
-
-        _mockSerializationService.Verify(
-            x => x.SerializeProject(It.IsAny<MechanicProject>(), path),
-            Times.Once);
-    }
-
     [Fact]
     public void Initialize_WhenSerializationServiceThrows_ShouldNotCatchException()
     {

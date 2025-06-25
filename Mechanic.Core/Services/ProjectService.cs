@@ -22,4 +22,29 @@ public class ProjectService(
         serializationService.SerializeProject(project, path);
         return project;
     }
+
+    public MechanicProject AddSourceFileToProject(MechanicProject mechanicProject, string path, SourceFile sourceFile)
+    {
+        logger.ProjectAddingSourceFile(sourceFile.Path, sourceFile.FileType.ToString(), mechanicProject.Id);
+        mechanicProject.AddSourceFile(sourceFile);
+        this.Save(mechanicProject, path);
+
+        return mechanicProject;
+    }
+
+    public MechanicProject Load(string path)
+    {
+        logger.ProjectLoading(path);
+        var mechanicProject = serializationService.DeserializeProject(path);
+        logger.ProjectLoaded(mechanicProject.Id);
+
+        return mechanicProject;
+    }
+
+    public void Save(MechanicProject mechanicProject, string path)
+    {
+        logger.ProjectSaving(mechanicProject.Id, path);
+        serializationService.SerializeProject(mechanicProject, path);
+        logger.ProjectSaved(mechanicProject.Id, path);
+    }
 }

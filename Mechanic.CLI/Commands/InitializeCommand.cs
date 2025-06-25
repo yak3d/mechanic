@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Mechanic.Core.Contracts;
-using Mechanic.Core.Extensions;
 using Mechanic.Core.Models;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -13,7 +12,7 @@ public class InitializeCommand(IProjectService projectService) : Command<Initial
     public sealed class Settings : CommandSettings
     {
         [Description("The project ID in reverse DNS order.")]
-        [CommandOption("-i|--project-id")]
+        [CommandOption("-p|--project-id")]
         public string? ProjectId { get; init; }
         
         [Description("The game the mod project is for.")]
