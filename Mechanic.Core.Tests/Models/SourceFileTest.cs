@@ -23,10 +23,10 @@ public class SourceFileTest
         result.Id.ShouldBe("12345678-1234-1234-1234-123456789012");
         result.Path.ShouldBe("/source/models/armor.fbx");
         result.FileType.ShouldBe(sourceFile.FileType.ToJson());
-        result.DestinationPaths.ShouldBe(new List<string> 
-        { 
-            "11111111-1111-1111-1111-111111111111", 
-            "22222222-2222-2222-2222-222222222222" 
+        result.DestinationPaths.ShouldBe(new List<string>
+        {
+            "11111111-1111-1111-1111-111111111111",
+            "22222222-2222-2222-2222-222222222222"
         });
     }
 
@@ -111,8 +111,8 @@ public class SourceFileTest
 
         var result = sourceFile.ToJson();
 
-        result.DestinationPaths.ShouldBe(new List<string> 
-        { 
+        result.DestinationPaths.ShouldBe(new List<string>
+        {
             "11111111-1111-1111-1111-111111111111",
             "22222222-2222-2222-2222-222222222222",
             "33333333-3333-3333-3333-333333333333"
@@ -148,8 +148,8 @@ public class SourceFileTest
 
         var result = sourceFile.ToJson();
 
-        result.DestinationPaths.ShouldBe(new List<string> 
-        { 
+        result.DestinationPaths.ShouldBe(new List<string>
+        {
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000"
         });

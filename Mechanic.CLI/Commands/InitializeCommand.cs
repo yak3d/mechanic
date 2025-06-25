@@ -7,14 +7,14 @@ using Spectre.Console.Cli;
 namespace Mechanic.CLI.Commands;
 
 [Description("Initializes a project in the current directory. This will create the project file in the current directory with the specified project ID. The project ID must be in reverse DNS format. For example: com.example.myproject.")]
-public class InitializeCommand(IProjectService projectService) : Command<InitializeCommand.Settings>
+public class InitializeCommand(IProjectService projectService) : AsyncCommand<InitializeCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
         [Description("The project ID in reverse DNS order.")]
         [CommandOption("-p|--project-id")]
         public string? ProjectId { get; init; }
-        
+
         [Description("The game the mod project is for.")]
         [CommandOption("-g|--game")]
         public string? Game { get; init; }
@@ -28,13 +28,13 @@ public class InitializeCommand(IProjectService projectService) : Command<Initial
         }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         string projectId = settings.ProjectId ?? PromptForProjectId();
 
         Game game = settings.Game == null ? PromptForGame() : Enum.Parse<Game>(settings.Game);
-        
-        projectService.Initialize(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, game);
+
+        await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, game);
 
         return 0;
     }

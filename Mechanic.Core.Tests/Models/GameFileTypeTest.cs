@@ -20,32 +20,32 @@ public class GameFileTypeTest
     [Fact]
     public void ToGameFileType_CastFromInt_ShouldThrowForInvalidValues()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFilesFileType)100).ToGameFileType());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFilesFileType)(-5)).ToGameFileType());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFilesFileType)int.MaxValue).ToGameFileType());
     }
 
     [Fact]
     public void ToGameFileType_DefaultEnumValue_ShouldHandleProperly()
     {
-            var defaultValue = default(GameFilesFileType);
-            
-            if (Enum.IsDefined(typeof(GameFilesFileType), defaultValue))
-            {
-                Should.NotThrow(() => defaultValue.ToGameFileType());
-            }
-            else
-            {
-                Should.Throw<ArgumentOutOfRangeException>(() => 
-                    defaultValue.ToGameFileType());
-            }
+        var defaultValue = default(GameFilesFileType);
+
+        if (Enum.IsDefined(typeof(GameFilesFileType), defaultValue))
+        {
+            Should.NotThrow(() => defaultValue.ToGameFileType());
+        }
+        else
+        {
+            Should.Throw<ArgumentOutOfRangeException>(() =>
+                defaultValue.ToGameFileType());
+        }
     }
-    
+
     [Theory]
     [InlineData(GameFileType.Material, GameFilesFileType.MAT)]
     [InlineData(GameFileType.DirectDrawSurface, GameFilesFileType.DDS)]
@@ -56,17 +56,17 @@ public class GameFileTypeTest
         var result = input.ToGameFileType();
         result.ShouldBe(expected);
     }
-    
+
     [Fact]
     public void ToJson_CastFromInt_ShouldThrowForInvalidValues()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFileType)100).ToJson());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFileType)(-5)).ToJson());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((GameFileType)int.MaxValue).ToJson());
     }
 }

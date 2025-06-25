@@ -2,6 +2,7 @@
 using Mechanic.CLI.Commands;
 using Mechanic.CLI.Commands.File;
 using Mechanic.Core.Contracts;
+using Mechanic.Core.Repositories;
 using Mechanic.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -18,7 +19,7 @@ Log.Logger = new LoggerConfiguration()
 
 registrations.AddLogging(builder => builder.AddSerilog());
 registrations.AddSingleton<IFileService, FileService>();
-registrations.AddSingleton<IProjectSerializationService<string>, JsonFileProjectSerializationService>();
+registrations.AddSingleton<IProjectRepository, JsonProjectRepository>();
 registrations.AddSingleton<IProjectService, ProjectService>();
 
 var registrar = new TypeRegistrar(registrations);

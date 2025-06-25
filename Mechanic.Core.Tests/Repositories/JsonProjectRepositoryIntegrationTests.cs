@@ -1,0 +1,239 @@
+﻿using System.Text.Json;
+using Mechanic.Core.Contracts;
+using Mechanic.Core.Models;
+using Mechanic.Core.Repositories;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Shouldly;
+
+namespace Mechanic.Core.Tests.Repositories;
+
+public class JsonProjectRepositoryIntegrationTests : IDisposable
+{
+    private readonly string _testDirectory;
+    private readonly string _testProjectFile;
+    private readonly Mock<ILogger<JsonProjectRepository>> _mockLogger;
+    private readonly Mock<IFileService> _mockFileService;
+    private readonly JsonProjectRepository _repository;
+
+    public JsonProjectRepositoryIntegrationTests()
+    {
+        _testDirectory = Path.Combine(Path.GetTempPath(), $"MechanicTests_{Guid.NewGuid()}");
+        Directory.CreateDirectory(_testDirectory);
+        _testProjectFile = Path.Combine(_testDirectory, "test-mechanic.json");
+
+        _mockLogger = new Mock<ILogger<JsonProjectRepository>>();
+        _mockFileService = new Mock<IFileService>();
+
+        _mockFileService.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
+            .Returns<string>(async filePath => await File.ReadAllTextAsync(filePath));
+
+        _mockFileService.Setup(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns<string, string>(async (filePath, content) => await File.WriteAllTextAsync(filePath, content));
+
+        _repository = new JsonProjectRepository(_mockLogger.Object, _mockFileService.Object, _testProjectFile);
+    }
+
+    [Fact]
+    public async Task GetCurrentProjectAsync_WhenProjectFileDoesNotExist_ReturnsNull()
+    {
+        var result = await _repository.GetCurrentProjectAsync();
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetCurrentProjectAsync_WhenProjectFileExists_ReturnsDeserializedProject()
+    {
+        var expectedProject = new MechanicProject
+        {
+            Id = "test-project-123",
+            Game = Game.Tes4Oblivion
+        };
+
+        await _repository.SaveCurrentProjectAsync(expectedProject);
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(expectedProject.Id);
+        result.Game.ShouldBe(expectedProject.Game);
+    }
+
+    [Fact]
+    public async Task GetCurrentProjectAsync_WhenJsonFileIsCorrupted_ReturnsNullAndLogsError()
+    {
+        await File.WriteAllTextAsync(_testProjectFile, "{ invalid json content }");
+
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task SaveCurrentProjectAsync_CreatesJsonFileWithCorrectFormat()
+    {
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            Game = Game.Tes4Oblivion
+        };
+
+        await _repository.SaveCurrentProjectAsync(project);
+
+        File.Exists(_testProjectFile).ShouldBeTrue();
+
+        var fileContent = await File.ReadAllTextAsync(_testProjectFile);
+        fileContent.ShouldNotBeNullOrEmpty();
+
+        var jsonDocument = JsonDocument.Parse(fileContent);
+        jsonDocument.RootElement.GetProperty("id").GetString().ShouldBe("integration-test-project");
+        jsonDocument.RootElement.GetProperty("game").GetInt32().ShouldBe((int)Game.Tes4Oblivion);
+
+        fileContent.ShouldContain("  ");
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WhenFileExists_ReturnsTrue()
+    {
+        await File.WriteAllTextAsync(_testProjectFile, "{}");
+
+        var result = await _repository.ProjectExistsAsync();
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WhenFileDoesNotExist_ReturnsFalse()
+    {
+        var result = await _repository.ProjectExistsAsync();
+        result.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task InitializeProjectAsync_CreatesNewProjectWithSpecifiedValues()
+    {
+        const string projectId = "new-project-456";
+        const Game game = Game.Tes4Oblivion;
+
+        await _repository.InitializeProjectAsync(projectId, game);
+
+        File.Exists(_testProjectFile).ShouldBeTrue();
+
+        var savedProject = await _repository.GetCurrentProjectAsync();
+        savedProject.ShouldNotBeNull();
+        savedProject.Id.ShouldBe(projectId);
+        savedProject.Game.ShouldBe(Game.Tes4Oblivion);
+    }
+
+    [Fact]
+    public async Task SaveAndRetrieve_RoundTripSerialization_PreservesAllProperties()
+    {
+        var originalProject = new MechanicProject
+        {
+            Id = "roundtrip-test",
+            Game = Game.Tes4Oblivion
+        };
+
+        await _repository.SaveCurrentProjectAsync(originalProject);
+        var retrievedProject = await _repository.GetCurrentProjectAsync();
+
+        retrievedProject.ShouldNotBeNull();
+        retrievedProject.ShouldBeEquivalentTo(originalProject);
+    }
+
+    [Fact]
+    public async Task SaveCurrentProjectAsync_OverwritesExistingFile()
+    {
+        var firstProject = new MechanicProject { Id = "first", Game = Game.Tes4Oblivion };
+        var secondProject = new MechanicProject { Id = "second", Game = Game.Tes4Oblivion };
+
+        await _repository.SaveCurrentProjectAsync(firstProject);
+        await _repository.SaveCurrentProjectAsync(secondProject);
+
+        var result = await _repository.GetCurrentProjectAsync();
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe("second");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("special-chars-!@#$%")]
+    [InlineData("unicode-测试")]
+    public async Task SaveAndRetrieve_WithVariousProjectIds_HandlesCorrectly(string projectId)
+    {
+        var project = new MechanicProject { Id = projectId, Game = Game.Tes4Oblivion };
+
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(projectId);
+    }
+
+    [Fact]
+    public async Task GetCurrentProjectAsync_WhenFileServiceThrowsException_ReturnsNull()
+    {
+        _mockFileService.Setup(fs => fs.ReadAllText(It.IsAny<string>()))
+            .ThrowsAsync(new UnauthorizedAccessException("Access denied"));
+
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task SaveCurrentProjectAsync_CallsFileServiceWithCorrectParameters()
+    {
+        var project = new MechanicProject { Id = "test", Game = Game.Tes4Oblivion };
+
+        await _repository.SaveCurrentProjectAsync(project);
+
+        _mockFileService.Verify(
+            fs => fs.WriteAllText(
+                _testProjectFile,
+                It.Is<string>(content => content.Contains("test"))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_UsesCorrectFilePath()
+    {
+        var customPath = Path.Combine(_testDirectory, "custom-project.json");
+        var customRepository = new JsonProjectRepository(_mockLogger.Object, _mockFileService.Object, customPath);
+
+        await File.WriteAllTextAsync(customPath, "{}");
+
+        var result = await customRepository.ProjectExistsAsync();
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task InitializeProjectAsync_IgnoresPassedGameParameter()
+    {
+        await _repository.InitializeProjectAsync("test-id", Game.Tes4Oblivion);
+
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldNotBeNull();
+        result.Game.ShouldBe(Game.Tes4Oblivion);
+    }
+
+    [Fact]
+    public async Task GetCurrentProjectAsync_WhenJsonModelIsNull_ReturnsNull()
+    {
+        await File.WriteAllTextAsync(_testProjectFile, "null");
+
+        var result = await _repository.GetCurrentProjectAsync();
+
+        result.ShouldBeNull();
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_testDirectory))
+        {
+            Directory.Delete(_testDirectory, recursive: true);
+        }
+    }
+}

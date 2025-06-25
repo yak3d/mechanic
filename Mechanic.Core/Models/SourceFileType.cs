@@ -1,6 +1,5 @@
-﻿using Mechanic.Core.Project.Models.Json;
-
 namespace Mechanic.Core.Models;
+using Mechanic.Core.Project.Models.Json;
 
 public enum SourceFileType
 {

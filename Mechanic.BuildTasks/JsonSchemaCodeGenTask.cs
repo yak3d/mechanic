@@ -10,7 +10,7 @@ public class JsonSchemaCodeGenTask : Task
 {
     [Required]
     public string SchemaFile { get; set; }
-    
+
     [Required]
     public string OutputFile { get; set; }
 
@@ -45,10 +45,10 @@ public class JsonSchemaCodeGenTask : Task
                     Type = JsonObjectType.Object
                 };
                 classSchema.Properties.ToList().ForEach(p => singleClassSchema.Properties.Add(p));
-                
+
                 var generator = new CSharpGenerator(schema, settings);
                 var code = generator.GenerateFile();
-                
+
                 var outputDir = Path.GetDirectoryName(OutputFile);
                 if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {

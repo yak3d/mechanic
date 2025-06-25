@@ -1,16 +1,9 @@
-﻿using Mechanic.Core.Contracts;
-
 namespace Mechanic.Core.Services;
+using Mechanic.Core.Contracts;
 
 public class FileService : IFileService
 {
-    public string ReadAllText(string path)
-    {
-        return File.ReadAllText(path);
-    }
+    public async Task<string> ReadAllText(string path) => await File.ReadAllTextAsync(path);
 
-    public void WriteAllText(string path, string contents)
-    {
-        File.WriteAllText(path, contents);
-    }
+    public async Task WriteAllText(string path, string contents) => await File.WriteAllTextAsync(path, contents);
 }

@@ -1,6 +1,5 @@
-﻿using Mechanic.Core.Project.Models.Json;
-
 namespace Mechanic.Core.Models;
+using Mechanic.Core.Project.Models.Json;
 
 public class SourceFile : ProjectFile
 {
@@ -12,7 +11,7 @@ public class SourceFile : ProjectFile
         Id = this.Id.ToString(),
         Path = this.Path,
         FileType = this.FileType.ToJson(),
-        DestinationPaths = this.DestinationPaths.Select(path => path.ToString()).ToList()
+        DestinationPaths = [.. this.DestinationPaths.Select(path => path.ToString())]
     };
 
     public static SourceFile FromJsonProject(SourceFiles sourceFile) => new()
@@ -20,6 +19,6 @@ public class SourceFile : ProjectFile
         Id = Guid.Parse(sourceFile.Id),
         Path = sourceFile.Path,
         FileType = sourceFile.FileType.ToSourceFileType(),
-        DestinationPaths = sourceFile.DestinationPaths.Select(Guid.Parse).ToList()
+        DestinationPaths = [.. sourceFile.DestinationPaths.Select(Guid.Parse)]
     };
 }

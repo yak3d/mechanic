@@ -1,7 +1,7 @@
-﻿namespace Mechanic.Core.Contracts;
+namespace Mechanic.Core.Contracts;
 
 public interface IFileService
 {
-    string ReadAllText(string path);
-    void WriteAllText(string path, string contents);
+    public Task<string> ReadAllText(string path);
+    public Task WriteAllText(string path, string contents);
 }

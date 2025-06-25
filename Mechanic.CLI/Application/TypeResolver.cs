@@ -10,14 +10,14 @@ public class TypeResolver : ITypeResolver, IDisposable
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
-    
+
     public object? Resolve(Type? type)
     {
         if (type == null)
         {
             return null;
         }
-        
+
         return _serviceProvider.GetService(type);
     }
 

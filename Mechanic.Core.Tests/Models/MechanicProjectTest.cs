@@ -16,7 +16,7 @@ public class MechanicProjectTest
         var sourceFileId1 = Guid.NewGuid().ToString();
         const string meshPath = "meshes/test/test.fbx";
         const SourceFilesFileType sourceFilesFileType = SourceFilesFileType.FBX;
-        
+
         var input = new Project.Models.Json.MechanicProject
         {
             Id = projectId,
@@ -31,7 +31,7 @@ public class MechanicProjectTest
                 }
             ]
         };
-        
+
         var result = MechanicProject.FromJsonObject(input);
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);

@@ -12,7 +12,7 @@ public class TypeRegistrar : ITypeRegistrar
     {
         _builder = builder;
     }
-    
+
     public void Register(Type service, Type implementation)
     {
         _builder.AddSingleton(service, implementation);
@@ -25,7 +25,8 @@ public class TypeRegistrar : ITypeRegistrar
 
     public void RegisterLazy(Type service, Func<object> factory)
     {
-        _builder.AddSingleton(service, _ => factory());    }
+        _builder.AddSingleton(service, _ => factory());
+    }
 
     public ITypeResolver Build()
     {

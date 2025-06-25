@@ -20,7 +20,7 @@ public class GameTest
 
         result.ShouldBe(expected);
     }
-    
+
     [Theory]
     [InlineData(Game.Tes4Oblivion, MechanicProjectGame.TES4Oblivion)]
     [InlineData(Game.Tes5Skyrim, MechanicProjectGame.TES5Skyrim)]
@@ -39,13 +39,13 @@ public class GameTest
     [Fact]
     public void ToGameFileType_CastFromInt_ShouldThrowForInvalidValues()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((MechanicProjectGame)100).FromJsonGame());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((MechanicProjectGame)(-5)).FromJsonGame());
-            
-        Should.Throw<ArgumentOutOfRangeException>(() => 
+
+        Should.Throw<ArgumentOutOfRangeException>(() =>
             ((MechanicProjectGame)int.MaxValue).FromJsonGame());
     }
 

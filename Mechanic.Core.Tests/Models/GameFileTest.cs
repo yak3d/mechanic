@@ -24,7 +24,7 @@ public class GameFileTest
         result.Path.ShouldBe("game/materials/metal.mat");
         result.GameFileType.ShouldBe(GameFileType.Material);
     }
-   
+
     [Fact]
     public void FromJson_WithMATFileType_ShouldMapToMAT()
     {
@@ -84,7 +84,7 @@ public class GameFileTest
 
         result.GameFileType.ShouldBe(GameFileType.PapyrusExecutable);
     }
-    
+
     [Fact]
     public void FromJson_WithValidUuidV4Format_ShouldParseCorrectly()
     {

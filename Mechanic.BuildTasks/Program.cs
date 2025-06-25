@@ -14,7 +14,7 @@ var namespaceName = args.Length > 2 ? args[2] : "Generated";
 try
 {
     Console.WriteLine($"🚀 Generating C# classes from {schemaFile}");
-    
+
     if (!File.Exists(schemaFile))
     {
         Console.Error.WriteLine($"❌ Schema file not found: {schemaFile}");

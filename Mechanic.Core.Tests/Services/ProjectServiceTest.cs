@@ -9,91 +9,114 @@ namespace Mechanic.Core.Tests.Services;
 
 public class ProjectServiceTest
 {
-        private readonly Mock<ILogger<ProjectService>> _mockLogger;
-    private readonly Mock<IProjectSerializationService<string>> _mockSerializationService;
+    private readonly Mock<ILogger<ProjectService>> _mockLogger;
+    private readonly Mock<IProjectRepository> _mockProjectRepository;
     private readonly ProjectService _projectService;
 
     public ProjectServiceTest()
     {
         _mockLogger = new Mock<ILogger<ProjectService>>();
-        _mockSerializationService = new Mock<IProjectSerializationService<string>>();
-        _projectService = new ProjectService(_mockLogger.Object, _mockSerializationService.Object);
+        _mockProjectRepository = new Mock<IProjectRepository>();
+        _projectService = new ProjectService(_mockLogger.Object, _mockProjectRepository.Object);
     }
 
     [Fact]
-    public void Initialize_ShouldReturnMechanicProjectWithCorrectProperties()
+    public async Task ProjectService_InitializeAsync_CreatesProject()
     {
-        var path = "/test/path";
-        var projectId = "test-project-id";
-        var game = Game.Tes5Skyrim;
+        var path = "mechanic.json";
+        var projectId = "com.example.MyProject";
+        var game = Game.SkyrimSpecialEdition;
 
-        var result = _projectService.Initialize(path, projectId, game);
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game));
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        {
+            Id = projectId,
+            Game = game
+        })!);
+
+        var result = await _projectService.InitializeAsync(path, projectId, game);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
         result.Game.ShouldBe(game);
-    }
+        result.DestinationFiles.ShouldBeEmpty();
+        result.SourceFiles.ShouldBeEmpty();
 
-    [Theory]
-    [InlineData("project-1", "/path/one", Game.Tes4Oblivion)]
-    [InlineData("project-2", "/path/two", Game.Tes5Skyrim)]
-    [InlineData("project-3", "/path/three", Game.SkyrimSpecialEdition)]
-    [InlineData("project-4", "/path/four", Game.Fallout3)]
-    [InlineData("project-5", "/path/five", Game.FalloutNewVegas)]
-    [InlineData("project-6", "/path/six", Game.Fallout4)]
-    [InlineData("project-7", "/path/seven", Game.Starfield)]
-    public void Initialize_WithDifferentParameters_ShouldReturnCorrectProject(string projectId, string path, Game game)
-    {
-        var result = _projectService.Initialize(path, projectId, game);
-
-        result.Id.ShouldBe(projectId);
-        result.Game.ShouldBe(game);
+        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
     }
 
     [Fact]
-    public void Initialize_ShouldCallSerializationServiceWithCorrectParameters()
+    public async Task ProjectService_InitializeAsync_ThrowsException_IfProjectExists()
     {
-        var path = "/test/path";
-        var projectId = "test-project-id";
-        var game = Game.Fallout4;
+        var path = "mechanic.json";
+        var projectId = "com.example.MyProject";
+        var game = Game.SkyrimSpecialEdition;
 
-        _projectService.Initialize(path, projectId, game);
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game)).Throws<InvalidOperationException>();
 
-        _mockSerializationService.Verify(
-            x => x.SerializeProject(
-                It.Is<MechanicProject>(p => p.Id == projectId && p.Game == game),
-                path),
-            Times.Once);
+        await _projectService.InitializeAsync(path, projectId, game).ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
-    public void Initialize_WhenSerializationServiceThrows_ShouldNotCatchException()
+    public async Task ProjectService_GetCurrentProjectAsync_ReturnsProject()
     {
-        var path = "/test/path";
-        var projectId = "test-project-id";
-        var game = Game.Tes5Skyrim;
-        var expectedException = new InvalidOperationException("Serialization failed");
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        {
+            Id = "com.example.MyProject",
+            Game = Game.SkyrimSpecialEdition
+        })!);
 
-        _mockSerializationService
-            .Setup(x => x.SerializeProject(It.IsAny<MechanicProject>(), It.IsAny<string>()))
-            .Throws(expectedException);
-
-        Should.Throw<InvalidOperationException>(() => _projectService.Initialize(path, projectId, game))
-            .ShouldBe(expectedException);
+        var result = await _projectService.GetCurrentProjectAsync();
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe("com.example.MyProject");
+        result.Game.ShouldBe(Game.SkyrimSpecialEdition);
     }
 
     [Fact]
-    public void Initialize_ShouldCreateNewProjectInstanceEachTime()
+    public async Task ProjectService_GetCurrentProjectAsync_ThrowsWhenProjectDoesntExist()
     {
-        var path = "/test/path";
-        var projectId = "test-project-id";
-        var game = Game.Tes5Skyrim;
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult<MechanicProject?>(null));
 
-        var result1 = _projectService.Initialize(path, projectId, game);
-        var result2 = _projectService.Initialize(path, projectId, game);
+        await _projectService.GetCurrentProjectAsync().ShouldThrowAsync<InvalidOperationException>();
+    }
 
-        result1.ShouldNotBeSameAs(result2);
-        result1.Id.ShouldBe(result2.Id);
-        result1.Game.ShouldBe(result2.Game);
+    [Fact]
+    public async Task ProjectService_UpdateProjectGameAsync_UpdatesProjectGame()
+    {
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        {
+            Id = "com.example.MyProject",
+            Game = Game.SkyrimSpecialEdition
+        })!);
+
+        var result = await _projectService.UpdateProjectGameAsync(Game.Starfield);
+        result.Game.ShouldBe(Game.Starfield);
+
+        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(result), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProjectService_AddSourceFileAsync_AddsSourceFile()
+    {
+        var mechanicProject = new MechanicProject
+        {
+            Id = "com.example.MyProject",
+            Game = Game.SkyrimSpecialEdition
+        };
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+
+        var pathToFileTiff = "path/to/file.tiff";
+        var sourceFileType = SourceFileType.Tiff;
+
+        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType);
+
+        result.ShouldNotBeNull();
+        result.Path.ShouldBe(pathToFileTiff);
+        result.FileType.ShouldBe(sourceFileType);
+
+        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
     }
 }

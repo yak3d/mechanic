@@ -1,50 +1,50 @@
-﻿using Mechanic.Core.Contracts;
+namespace Mechanic.Core.Services;
+using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Microsoft.Extensions.Logging;
-
-namespace Mechanic.Core.Services;
 
 using Infrastructure.Logging;
 
 public class ProjectService(
     ILogger<ProjectService> logger,
-    IProjectSerializationService<string> serializationService) : IProjectService
+    IProjectRepository projectRepository) : IProjectService
 {
-    public MechanicProject Initialize(string path, string projectId, Game game)
+    public async Task<MechanicProject> InitializeAsync(string path, string projectId, Game game)
     {
-        logger.ProjectInitializing(projectId, path);
-        var project = new MechanicProject
+        if (await projectRepository.ProjectExistsAsync())
         {
-            Id = projectId,
-            Game = game
-        };
+            throw new InvalidOperationException("Project already exists. Delete it before initializing.");
+        }
 
-        serializationService.SerializeProject(project, path);
+        logger.ProjectInitializing(projectId, path);
+
+        await projectRepository.InitializeProjectAsync(projectId, game);
+        var project = await projectRepository.GetCurrentProjectAsync();
+        return project ?? throw new InvalidOperationException("Project not found after initializing.");
+    }
+
+    public async Task<MechanicProject> GetCurrentProjectAsync()
+    {
+        var project = await projectRepository.GetCurrentProjectAsync() ?? throw new InvalidOperationException("Project not found, initialize it first.");
+
         return project;
     }
 
-    public MechanicProject AddSourceFileToProject(MechanicProject mechanicProject, string path, SourceFile sourceFile)
+    public async Task<MechanicProject> UpdateProjectGameAsync(Game game)
     {
-        logger.ProjectAddingSourceFile(sourceFile.Path, sourceFile.FileType.ToString(), mechanicProject.Id);
-        mechanicProject.AddSourceFile(sourceFile);
-        this.Save(mechanicProject, path);
+        var project = await this.GetCurrentProjectAsync();
+        project.ChangeGame(game);
+        await projectRepository.SaveCurrentProjectAsync(project);
 
-        return mechanicProject;
+        return project;
     }
 
-    public MechanicProject Load(string path)
+    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType)
     {
-        logger.ProjectLoading(path);
-        var mechanicProject = serializationService.DeserializeProject(path);
-        logger.ProjectLoaded(mechanicProject.Id);
+        var project = await this.GetCurrentProjectAsync();
+        var sourceFile = project.AddSourceFile(path, fileType);
+        await projectRepository.SaveCurrentProjectAsync(project);
 
-        return mechanicProject;
-    }
-
-    public void Save(MechanicProject mechanicProject, string path)
-    {
-        logger.ProjectSaving(mechanicProject.Id, path);
-        serializationService.SerializeProject(mechanicProject, path);
-        logger.ProjectSaved(mechanicProject.Id, path);
+        return sourceFile;
     }
 }

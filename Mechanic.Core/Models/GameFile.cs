@@ -1,12 +1,11 @@
-﻿using Mechanic.Core.Project.Models.Json;
-
 namespace Mechanic.Core.Models;
+using Mechanic.Core.Project.Models.Json;
 
 public class GameFile : ProjectFile
 {
     public GameFileType GameFileType { get; set; }
 
-    public Mechanic.Core.Project.Models.Json.GameFiles ToJson() => new()
+    public GameFiles ToJson() => new()
     {
         Id = this.Id.ToString(),
         Path = this.Path,

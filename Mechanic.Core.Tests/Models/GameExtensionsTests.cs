@@ -7,7 +7,7 @@ namespace Mechanic.Core.Tests.Models;
 
 public class GameExtensionsTests
 {
-   [Theory]
+    [Theory]
     [InlineData(Game.Tes4Oblivion)]
     [InlineData(Game.Tes5Skyrim)]
     [InlineData(Game.SkyrimSpecialEdition)]
@@ -21,11 +21,11 @@ public class GameExtensionsTests
 
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
-        
+
         var enumString = game.ToString();
         var field = game.GetType().GetField(enumString);
         var displayAttribute = field?.GetCustomAttribute<DisplayAttribute>();
-        
+
         if (displayAttribute?.Name != null)
         {
             result.ShouldBe(displayAttribute.Name);

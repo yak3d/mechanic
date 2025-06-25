@@ -1,4 +1,4 @@
-﻿namespace Mechanic.Core.Models;
+namespace Mechanic.Core.Models;
 
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
