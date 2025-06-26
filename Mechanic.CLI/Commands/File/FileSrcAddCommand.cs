@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using Mechanic.CLI.Models;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Mechanic.Core.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using SourceFileType = Mechanic.CLI.Models.SourceFileType;
 
 namespace Mechanic.CLI.Commands.File;
 
@@ -32,7 +34,7 @@ public class FileSrcAddCommand(IProjectService projectService) : AsyncCommand<Fi
             ? AssumeFileType(Path.GetExtension(settings.SourcePath))
             : Enum.Parse<SourceFileType>(settings.Type);
 
-        await projectService.AddSourceFileAsync(settings.SourcePath, fileType);
+        await projectService.AddSourceFileAsync(settings.SourcePath, fileType.ToDomain());
 
         return 0;
     }

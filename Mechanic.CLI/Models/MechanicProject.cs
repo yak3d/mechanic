@@ -1,0 +1,61 @@
+
+using Mechanic.Core.Models;
+
+namespace Mechanic.CLI.Models;
+
+public class MechanicProject
+{
+    private Game game;
+
+    public required string Id { get; init; }
+
+    public required CLI.Models.Game Game
+    {
+        get => this.game;
+        init => this.game = value;
+    }
+
+    public List<SourceFile> SourceFiles { get; private init; } = [];
+    public List<CLI.Models.GameFile> DestinationFiles { get; init; } = [];
+
+    public SourceFile AddSourceFile(string path, SourceFileType fileType)
+    {
+        if (this.SourceFiles.Any(sourceFile => sourceFile.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException($"Source file already exists with path: {path}");
+        }
+
+        var sourceFile = new SourceFile
+        {
+            Id = Guid.NewGuid(),
+            Path = path,
+            FileType = fileType,
+            DestinationPaths = []
+        };
+
+        this.SourceFiles.Add(sourceFile);
+
+        return sourceFile;
+    }
+    public Core.Models.MechanicProject ToDomain()
+    {
+        return new Core.Models.MechanicProject
+        {
+            Id = Id,
+            Game = Game.ToDomain(),
+            SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
+            DestinationFiles = [.. DestinationFiles.Select(df => df.ToDomain())]
+        };
+    }
+    
+    public static MechanicProject FromDomain(Core.Models.MechanicProject domainProject)
+    {
+        return new MechanicProject
+        {
+            Id = domainProject.Id,
+            Game = domainProject.Game.FromDomain(),
+            SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
+            DestinationFiles = [.. domainProject.DestinationFiles.Select(GameFile.FromDomain)]
+        };
+    }
+}

@@ -32,6 +32,7 @@ app.Configure(config =>
     config.AddBranch("file", file =>
     {
         file.SetDescription("Allows you to add, list, remove files tracked by Mechanic.");
+        file.AddCommand<FileListCommand>("ls").WithAlias("list").WithDescription("Lists all of the files managed by the Mechanic project in this directory.");
         file.AddBranch("src", src =>
         {
             src.SetDescription("Allows you to add, list, remove [b]source[/] files tracked by Mechanic.");

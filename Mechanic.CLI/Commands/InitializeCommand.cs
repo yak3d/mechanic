@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel;
+using Mechanic.CLI.Models;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Game = Mechanic.CLI.Models.Game;
 
 namespace Mechanic.CLI.Commands;
 
@@ -34,7 +36,7 @@ public class InitializeCommand(IProjectService projectService) : AsyncCommand<In
 
         Game game = settings.Game == null ? PromptForGame() : Enum.Parse<Game>(settings.Game);
 
-        await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, game);
+        await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, game.ToDomain());
 
         return 0;
     }

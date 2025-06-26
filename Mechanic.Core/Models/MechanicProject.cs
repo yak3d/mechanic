@@ -16,7 +16,7 @@ public class MechanicProject
         init => this.game = value;
     }
 
-    public List<SourceFile> SourceFiles { get; private init; } = [];
+    public List<SourceFile> SourceFiles { get; init; } = [];
     public List<GameFile> DestinationFiles { get; init; } = [];
 
     public SourceFile AddSourceFile(string path, SourceFileType fileType)
