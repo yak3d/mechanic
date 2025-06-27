@@ -1,10 +1,12 @@
 namespace Mechanic.Core.Repositories;
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Contracts;
 using Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
 using Models;
+using Newtonsoft.Json.Linq;
 
 public class JsonProjectRepository(
     ILogger<JsonProjectRepository> logger,
@@ -38,7 +40,16 @@ public class JsonProjectRepository(
         }
     }
 
-    public async Task SaveCurrentProjectAsync(MechanicProject project) => await fileService.WriteAllText(projectFilePath, JsonSerializer.Serialize(project, serializerOptions));
+    public async Task SaveCurrentProjectAsync(MechanicProject project)
+    {
+        var projectJson = project.ToJson();
+        var jsonString = JsonSerializer.Serialize(projectJson, serializerOptions);
+
+        var jsonNode = JsonNode.Parse(jsonString)!;
+        var jsonWithSchema = PrependSchema(jsonNode, "https://your-domain.com/schemas/mechanic-project.json");
+
+        await fileService.WriteAllText(projectFilePath, jsonWithSchema.ToJsonString(serializerOptions));
+    }
 
     public async Task<bool> ProjectExistsAsync() => await Task.FromResult(File.Exists(projectFilePath));
 
@@ -48,4 +59,25 @@ public class JsonProjectRepository(
             Id = id,
             Game = Game.Tes4Oblivion
         });
+
+    public async Task<GameFile?> FindGameFileByIdAsync(Guid id)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        return project?.GameFiles.FirstOrDefault(x => x.Id == id);
+    }
+
+    private static JsonObject PrependSchema(JsonNode jsonNode, string schemaUrl)
+    {
+        var originalObject = jsonNode.AsObject();
+        var newJsonObject = new JsonObject();
+
+        newJsonObject["$schema"] = schemaUrl;
+
+        foreach (var kvp in originalObject)
+        {
+            newJsonObject[kvp.Key] = kvp.Value?.DeepClone();
+        }
+
+        return newJsonObject;
+    }
 }

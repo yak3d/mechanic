@@ -39,7 +39,7 @@ public class ProjectServiceTest
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
         result.Game.ShouldBe(game);
-        result.DestinationFiles.ShouldBeEmpty();
+        result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
         _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game), Times.Once);

@@ -14,7 +14,7 @@ public class SourceFile : CLI.Models.ProjectFile
             Id = Id,
             Path = Path,
             FileType = FileType.ToDomain(),
-            DestinationPaths = [.. DestinationPaths]
+            GameFileLinks = [.. DestinationPaths]
         };
     }
     
@@ -25,7 +25,7 @@ public class SourceFile : CLI.Models.ProjectFile
             Id = domainSourceFile.Id,
             Path = domainSourceFile.Path,
             FileType = domainSourceFile.FileType.FromDomain(),
-            DestinationPaths = [.. domainSourceFile.DestinationPaths]
+            DestinationPaths = [.. domainSourceFile.GameFileLinks]
         };
     }
 }

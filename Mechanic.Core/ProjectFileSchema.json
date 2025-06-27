@@ -80,6 +80,7 @@
             "description": "Denotes the filetype for the game file.",
             "type": "string",
             "enum": [
+              "OTHER",
               "MAT",
               "DDS",
               "WEM",

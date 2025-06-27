@@ -44,7 +44,7 @@ public class MechanicProject
             Id = Id,
             Game = Game.ToDomain(),
             SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
-            DestinationFiles = [.. DestinationFiles.Select(df => df.ToDomain())]
+            GameFiles = [.. DestinationFiles.Select(df => df.ToDomain())]
         };
     }
     
@@ -55,7 +55,7 @@ public class MechanicProject
             Id = domainProject.Id,
             Game = domainProject.Game.FromDomain(),
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
-            DestinationFiles = [.. domainProject.DestinationFiles.Select(GameFile.FromDomain)]
+            DestinationFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };
     }
 }

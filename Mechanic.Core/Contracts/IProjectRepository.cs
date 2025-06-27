@@ -8,4 +8,5 @@ public interface IProjectRepository
     public Task SaveCurrentProjectAsync(MechanicProject project);
     public Task<bool> ProjectExistsAsync();
     public Task InitializeProjectAsync(string id, Game game);
+    public Task<GameFile?> FindGameFileByIdAsync(Guid id);
 }

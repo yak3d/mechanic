@@ -11,14 +11,43 @@ public class FileListCommand(IProjectService projectService) : AsyncCommand
     public override async Task<int> ExecuteAsync(CommandContext context)
     {
         var project = MechanicProject.FromDomain(await projectService.GetCurrentProjectAsync());
-        var files = project.SourceFiles.Select(ProjectFile (file) => file)
-            .Concat(project.DestinationFiles.Select(file => (ProjectFile) file));
 
-        var treeRoot = new Tree(project.Id);
-        treeRoot.AddNodes(files.Select(file => $"{file.Path}"));
+        var sourceFileRoot = new Tree("Source Files");
+        foreach (var sf in project.SourceFiles)
+        {
+            var fileNode = new TreeNode(new Text($"{sf.Path}"));
+    
+            await BuildGameFileLinkTree(sf, fileNode);
+    
+            sourceFileRoot.AddNode(fileNode);
+        }
         
-        AnsiConsole.Write(treeRoot);
+        var gameFiles = project.DestinationFiles.OrderBy(static f => f.Path).Select(gf => new Text($"{gf.Path} ({gf.Id})"));
+        var gameFilesRoot = new Tree("Game Files");
+        gameFilesRoot.AddNodes(gameFiles);
+        
+        AnsiConsole.Write(new Rows(
+                sourceFileRoot,
+                Text.NewLine,
+                gameFilesRoot
+            )
+        );
 
         return 0;
+    }
+
+    private async Task BuildGameFileLinkTree(SourceFile sf, TreeNode fileNode)
+    {
+        if (sf.DestinationPaths.Count > 0)
+        {
+            var gameFileIds = await Task.WhenAll(
+                sf.DestinationPaths.Select(async gf =>
+                {
+                    var gameFile = await projectService.FindGameFileByIdAsync(gf);
+                    return gameFile != null ? $"{gameFile.Path} ({gameFile.Id})" : $"Game file not found: {gf}";
+                })
+            );
+            fileNode.AddNodes(gameFileIds);
+        }
     }
 }

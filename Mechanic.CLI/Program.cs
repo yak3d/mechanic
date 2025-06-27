@@ -40,6 +40,12 @@ app.Configure(config =>
                 .WithDescription(
                     "Adds a [b]source[/] file to track by Mechanic. It should exist in your source directory..");
         });
+        file.AddBranch("game", game =>
+        {
+            game.SetDescription("Allows you to add, list, remove [b]game[/] files tracked by Mechanic.");
+            game.AddCommand<FileGameAddCommand>("add")
+                .WithDescription("Adds a [b]game[/] file to track by Mechanic.");
+        });
     });
 });
 

@@ -2,16 +2,18 @@ namespace Mechanic.CLI.Models;
 
 public enum GameFileType
 {
-    Material = 0,
-    DirectDrawSurface = 1,
-    WwiseEncodedMedia = 2,
-    PapyrusExecutable = 3
+    Other = 0,
+    Material = 1,
+    DirectDrawSurface = 2,
+    WwiseEncodedMedia = 3,
+    PapyrusExecutable = 4,
 }
 
 public static class GameFileTypeExtensions
 {
     public static Core.Models.GameFileType ToDomain(this GameFileType gameFileType) => gameFileType switch
     {
+        GameFileType.Other => Core.Models.GameFileType.Other,
         GameFileType.Material => Core.Models.GameFileType.Material,
         GameFileType.DirectDrawSurface => Core.Models.GameFileType.DirectDrawSurface,
         GameFileType.WwiseEncodedMedia => Core.Models.GameFileType.WwiseEncodedMedia,
@@ -21,6 +23,7 @@ public static class GameFileTypeExtensions
     
     public static GameFileType FromDomain(this Core.Models.GameFileType domainGameFileType) => domainGameFileType switch
     {
+        Core.Models.GameFileType.Other => GameFileType.Other,
         Core.Models.GameFileType.Material => GameFileType.Material,
         Core.Models.GameFileType.DirectDrawSurface => GameFileType.DirectDrawSurface,
         Core.Models.GameFileType.WwiseEncodedMedia => GameFileType.WwiseEncodedMedia,

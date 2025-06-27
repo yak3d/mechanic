@@ -39,12 +39,25 @@ public class ProjectService(
         return project;
     }
 
-    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType)
+    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType) => await this.AddSourceFileAsync(path, fileType, null);
+
+    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType, Guid? id)
     {
         var project = await this.GetCurrentProjectAsync();
-        var sourceFile = project.AddSourceFile(path, fileType);
+        var sourceFile = project.AddSourceFile(path, fileType, id);
         await projectRepository.SaveCurrentProjectAsync(project);
 
         return sourceFile;
     }
+
+    public async Task<GameFile> AddGameFileAsync(string path, GameFileType fileType)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var gameFile = project.AddGameFile(path, fileType);
+        await projectRepository.SaveCurrentProjectAsync(project);
+
+        return gameFile;
+    }
+
+    public async Task<GameFile?> FindGameFileByIdAsync(Guid id) => await projectRepository.FindGameFileByIdAsync(id);
 }

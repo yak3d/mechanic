@@ -4,14 +4,14 @@ using Mechanic.Core.Project.Models.Json;
 public class SourceFile : ProjectFile
 {
     public required SourceFileType FileType { get; init; }
-    public List<Guid> DestinationPaths { get; init; } = [];
+    public List<Guid> GameFileLinks { get; init; } = [];
 
     public SourceFiles ToJson() => new()
     {
         Id = this.Id.ToString(),
         Path = this.Path,
         FileType = this.FileType.ToJson(),
-        DestinationPaths = [.. this.DestinationPaths.Select(path => path.ToString())]
+        DestinationPaths = [.. this.GameFileLinks.Select(path => path.ToString())]
     };
 
     public static SourceFile FromJsonProject(SourceFiles sourceFile) => new()
@@ -19,6 +19,6 @@ public class SourceFile : ProjectFile
         Id = Guid.Parse(sourceFile.Id),
         Path = sourceFile.Path,
         FileType = sourceFile.FileType.ToSourceFileType(),
-        DestinationPaths = [.. sourceFile.DestinationPaths.Select(Guid.Parse)]
+        GameFileLinks = [.. sourceFile.DestinationPaths.Select(Guid.Parse)]
     };
 }
