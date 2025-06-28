@@ -22,7 +22,7 @@ public class FileListCommand(IProjectService projectService) : AsyncCommand
             sourceFileRoot.AddNode(fileNode);
         }
         
-        var gameFiles = project.DestinationFiles.OrderBy(static f => f.Path).Select(gf => new Text($"{gf.Path} ({gf.Id})"));
+        var gameFiles = project.GameFiles.OrderBy(static f => f.Path).Select(gf => new Text($"{gf.Path} ({gf.Id})"));
         var gameFilesRoot = new Tree("Game Files");
         gameFilesRoot.AddNodes(gameFiles);
         

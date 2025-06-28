@@ -14,6 +14,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="LanguageExt.Core" Version="4.4.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
@@ -34,8 +35,7 @@
     <MakeDir Directories="$(JsonSchemaOutputDir)" Condition="!Exists('$(JsonSchemaOutputDir)')" />
 
     <!-- Use dotnet run to execute the generation -->
-    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\..\Mechanic.BuildTasks&quot; --configuration $(Configuration) -- &quot;$(JsonSchemaFile)&quot; &quot;$(JsonSchemaOutputFile)&quot; &quot;$(JsonSchemaNamespace)&quot;"
-          ContinueOnError="false" />
+    <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\..\Mechanic.BuildTasks&quot; --configuration $(Configuration) -- &quot;$(JsonSchemaFile)&quot; &quot;$(JsonSchemaOutputFile)&quot; &quot;$(JsonSchemaNamespace)&quot;" ContinueOnError="false" />
 
     <ItemGroup>
       <Compile Include="$(JsonSchemaOutputFile)" Condition="Exists('$(JsonSchemaOutputFile)')" />

@@ -16,7 +16,7 @@ public class MechanicProject
     }
 
     public List<SourceFile> SourceFiles { get; private init; } = [];
-    public List<CLI.Models.GameFile> DestinationFiles { get; init; } = [];
+    public List<CLI.Models.GameFile> GameFiles { get; init; } = [];
 
     public SourceFile AddSourceFile(string path, SourceFileType fileType)
     {
@@ -44,7 +44,7 @@ public class MechanicProject
             Id = Id,
             Game = Game.ToDomain(),
             SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
-            GameFiles = [.. DestinationFiles.Select(df => df.ToDomain())]
+            GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
         };
     }
     
@@ -55,7 +55,7 @@ public class MechanicProject
             Id = domainProject.Id,
             Game = domainProject.Game.FromDomain(),
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
-            DestinationFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
+            GameFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };
     }
 }

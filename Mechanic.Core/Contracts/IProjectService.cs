@@ -1,13 +1,18 @@
 namespace Mechanic.Core.Contracts;
+
+using LanguageExt;
 using Mechanic.Core.Models;
+using Services.Errors;
 
 public interface IProjectService
 {
     public Task<MechanicProject> InitializeAsync(string path, string projectId, Game game);
     public Task<MechanicProject> GetCurrentProjectAsync();
     public Task<MechanicProject> UpdateProjectGameAsync(Game game);
-    public Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType);
-    public Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType, Guid? id);
+    public Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType);
+    public Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType,
+        Guid? id);
     public Task<GameFile> AddGameFileAsync(string path, GameFileType fileType);
     public Task<GameFile?> FindGameFileByIdAsync(Guid id);
+    public Task<bool> SourceFileExistsWithPath(string path);
 }

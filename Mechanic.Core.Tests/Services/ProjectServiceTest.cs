@@ -1,6 +1,7 @@
 ﻿using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Mechanic.Core.Services;
+using Mechanic.Core.Services.Errors;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
@@ -112,11 +113,87 @@ public class ProjectServiceTest
 
         var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType);
 
-        result.ShouldNotBeNull();
-        result.Path.ShouldBe(pathToFileTiff);
-        result.FileType.ShouldBe(sourceFileType);
+        result.Match(
+            Right: file =>
+            {
+                file.ShouldNotBeNull();
+                file.Path.ShouldBe(pathToFileTiff);
+                file.FileType.ShouldBe(sourceFileType);
+            },
+            Left: error => throw new ShouldAssertException($"Expected success but got failure {error}")
+        );
 
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
         _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
+    }
+    
+    [Fact]
+    public async Task ProjectService_AddSourceFileAsync_AddsSourceFileWithId()
+    {
+        var existingGameFileId = Guid.NewGuid();
+        var mechanicProject = new MechanicProject
+        {
+            Id = "com.example.MyProject",
+            Game = Game.SkyrimSpecialEdition,
+            GameFiles = [
+                new GameFile
+                {
+                    Id = existingGameFileId,
+                    Path = "path/to/file.dds"
+                }
+            ]
+        };
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+
+        var pathToFileTiff = "path/to/file.tiff";
+        var sourceFileType = SourceFileType.Tiff;
+
+        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, existingGameFileId);
+
+        result.Match(
+            Right: file =>
+            {
+                file.ShouldNotBeNull();
+                file.Path.ShouldBe(pathToFileTiff);
+                file.FileType.ShouldBe(sourceFileType);
+            },
+            Left: error => throw new ShouldAssertException($"Expected success but got failure {error}")
+        );
+
+        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
+    }
+    
+    [Fact]
+    public async Task ProjectService_AddSourceFileAsync_AddsSourceFileWithBadIdGetsError()
+    {
+        var existingGameFileId = Guid.NewGuid();
+        var mechanicProject = new MechanicProject
+        {
+            Id = "com.example.MyProject",
+            Game = Game.SkyrimSpecialEdition,
+            GameFiles = [
+                new GameFile
+                {
+                    Id = existingGameFileId,
+                    Path = "path/to/file.dds"
+                }
+            ]
+        };
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+
+        var pathToFileTiff = "path/to/file.tiff";
+        var sourceFileType = SourceFileType.Tiff;
+
+        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, new Guid());
+
+        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+        result.Match(
+            Right: file => throw new ShouldAssertException($"Expected failure, but was successful"),
+            Left: error => error.ShouldBeOfType<LinkedFileDoesNotExistError>()
+        );
+
+        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Never);
     }
 }

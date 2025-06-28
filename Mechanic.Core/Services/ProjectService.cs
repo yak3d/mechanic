@@ -1,9 +1,13 @@
 namespace Mechanic.Core.Services;
+
+using Errors;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Microsoft.Extensions.Logging;
 
 using Infrastructure.Logging;
+using LanguageExt;
+using static LanguageExt.Prelude;
 
 public class ProjectService(
     ILogger<ProjectService> logger,
@@ -39,11 +43,21 @@ public class ProjectService(
         return project;
     }
 
-    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType) => await this.AddSourceFileAsync(path, fileType, null);
+    public async Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType) => await this.AddSourceFileAsync(path, fileType, null);
 
-    public async Task<SourceFile> AddSourceFileAsync(string path, SourceFileType fileType, Guid? id)
+    public async Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(
+        string path,
+        SourceFileType fileType,
+        Guid? id
+        )
     {
         var project = await this.GetCurrentProjectAsync();
+
+        if (id != null && project.GameFiles.All(file => file.Id != id))
+        {
+            return Left<SourceFileAddError, SourceFile>(new LinkedFileDoesNotExistError { LinkedFileId = id.Value });
+        }
+
         var sourceFile = project.AddSourceFile(path, fileType, id);
         await projectRepository.SaveCurrentProjectAsync(project);
 
@@ -60,4 +74,12 @@ public class ProjectService(
     }
 
     public async Task<GameFile?> FindGameFileByIdAsync(Guid id) => await projectRepository.FindGameFileByIdAsync(id);
+    public async Task<bool> SourceFileExistsWithPath(string path) => await projectRepository.GetCurrentProjectAsync()
+        .ContinueWith(project =>
+        {
+            var projectResult = project.Result;
+
+            return projectResult != null && Enumerable.Any(projectResult.SourceFiles, sourceFile => sourceFile.Path == path);
+        });
 }
+

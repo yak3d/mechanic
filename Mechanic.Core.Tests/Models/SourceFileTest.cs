@@ -15,7 +15,7 @@ public class SourceFileTest
             Id = Guid.Parse("12345678-1234-1234-1234-123456789012"),
             Path = "/source/models/armor.fbx",
             FileType = SourceFileType.Fbx,
-            DestinationPaths = new List<Guid> { guid1, guid2 }
+            GameFileLinks = new List<Guid> { guid1, guid2 }
         };
 
         var result = sourceFile.ToJson();
@@ -48,7 +48,7 @@ public class SourceFileTest
             Id = id,
             Path = path,
             FileType = fileType,
-            DestinationPaths = destinationPaths
+            GameFileLinks = destinationPaths
         };
 
         var result = sourceFile.ToJson();
@@ -67,7 +67,7 @@ public class SourceFileTest
             Id = Guid.NewGuid(),
             Path = "/test/path",
             FileType = SourceFileType.Fbx,
-            DestinationPaths = new List<Guid>()
+            GameFileLinks = new List<Guid>()
         };
 
         var result = sourceFile.ToJson();
@@ -85,7 +85,7 @@ public class SourceFileTest
             Id = Guid.NewGuid(),
             Path = "/test/path",
             FileType = SourceFileType.Wav,
-            DestinationPaths = [destinationGuid]
+            GameFileLinks = [destinationGuid]
         };
 
         var result = sourceFile.ToJson();
@@ -106,7 +106,7 @@ public class SourceFileTest
             Id = Guid.NewGuid(),
             Path = "/test/path",
             FileType = SourceFileType.Tiff,
-            DestinationPaths = destinationPaths
+            GameFileLinks = destinationPaths
         };
 
         var result = sourceFile.ToJson();
@@ -127,7 +127,7 @@ public class SourceFileTest
             Id = Guid.Empty,
             Path = "/test/path",
             FileType = SourceFileType.Other,
-            DestinationPaths = new List<Guid>()
+            GameFileLinks = new List<Guid>()
         };
 
         var result = sourceFile.ToJson();
@@ -143,7 +143,7 @@ public class SourceFileTest
             Id = Guid.NewGuid(),
             Path = "/test/path",
             FileType = SourceFileType.Psc,
-            DestinationPaths = new List<Guid> { Guid.Empty, Guid.Empty }
+            GameFileLinks = new List<Guid> { Guid.Empty, Guid.Empty }
         };
 
         var result = sourceFile.ToJson();
