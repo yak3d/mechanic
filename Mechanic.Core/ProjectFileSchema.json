@@ -17,9 +17,20 @@
       ]
     },
     "game": {
-      "description": "The game that this mod project is for.",
-      "type": "string",
-      "enum": ["TES4Oblivion", "TES5Skyrim", "SkyrimSpecialEdition", "Fallout3", "FalloutNewVegas", "Fallout4", "Starfield"]
+      "description": "The details of the game the mod project is for.",
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Path to the game installation",
+          "type": "string",
+          "examples": ["C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition"]
+        },
+        "name": {
+          "description": "The game that this mod project is for.",
+          "type": "string",
+          "enum": ["TES4Oblivion", "TES5Skyrim", "SkyrimSpecialEdition", "Fallout3", "FalloutNewVegas", "Fallout4", "Starfield"]
+        }
+      },
     },
     "sourceFiles": {
       "description": "List of files tracked by the project",

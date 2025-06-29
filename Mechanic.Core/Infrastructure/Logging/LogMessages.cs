@@ -38,4 +38,6 @@ public static partial class LogMessages
     public static partial void ProjectAddingSourceFile(this ILogger logger, string sourcePath, string sourceType, string projectId);
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to serialize project from {ProjectPath}")]
     public static partial void ProjectDeserializingError(this ILogger logger, string projectPath, JsonException exception);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to parse steam manifest")]
+    public static partial void SteamManifestDeserializingError(this ILogger logger, Exception exception);
 }

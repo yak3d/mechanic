@@ -8,22 +8,22 @@ namespace Mechanic.Core.Tests.Models;
 public class GameExtensionsTests
 {
     [Theory]
-    [InlineData(Game.Tes4Oblivion)]
-    [InlineData(Game.Tes5Skyrim)]
-    [InlineData(Game.SkyrimSpecialEdition)]
-    [InlineData(Game.Fallout3)]
-    [InlineData(Game.FalloutNewVegas)]
-    [InlineData(Game.Fallout4)]
-    [InlineData(Game.Starfield)]
-    public void GetDisplayName_WhenGameHasDisplayAttribute_ShouldReturnDisplayName(Game game)
+    [InlineData(GameName.Tes4Oblivion)]
+    [InlineData(GameName.Tes5Skyrim)]
+    [InlineData(GameName.SkyrimSpecialEdition)]
+    [InlineData(GameName.Fallout3)]
+    [InlineData(GameName.FalloutNewVegas)]
+    [InlineData(GameName.Fallout4)]
+    [InlineData(GameName.Starfield)]
+    public void GetDisplayName_WhenGameHasDisplayAttribute_ShouldReturnDisplayName(GameName gameName)
     {
-        var result = game.GetDisplayName();
+        var result = gameName.GetDisplayName();
 
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
 
-        var enumString = game.ToString();
-        var field = game.GetType().GetField(enumString);
+        var enumString = gameName.ToString();
+        var field = gameName.GetType().GetField(enumString);
         var displayAttribute = field?.GetCustomAttribute<DisplayAttribute>();
 
         if (displayAttribute?.Name != null)
@@ -37,16 +37,16 @@ public class GameExtensionsTests
     }
 
     [Theory]
-    [InlineData(Game.Tes4Oblivion, "The Elder Scrolls IV: Oblivion")]
-    [InlineData(Game.Tes5Skyrim, "The Elder Scrolls V: Skyrim")]
-    [InlineData(Game.SkyrimSpecialEdition, "The Elder Scrolls V: Skyrim Special Edition")]
-    [InlineData(Game.Fallout3, "Fallout 3")]
-    [InlineData(Game.FalloutNewVegas, "Fallout: New Vegas")]
-    [InlineData(Game.Fallout4, "Fallout 4")]
-    [InlineData(Game.Starfield, "Starfield")]
-    public void GetDisplayName_ShouldReturnExpectedDisplayNames(Game game, string expectedDisplayName)
+    [InlineData(GameName.Tes4Oblivion, "The Elder Scrolls IV: Oblivion")]
+    [InlineData(GameName.Tes5Skyrim, "The Elder Scrolls V: Skyrim")]
+    [InlineData(GameName.SkyrimSpecialEdition, "The Elder Scrolls V: Skyrim Special Edition")]
+    [InlineData(GameName.Fallout3, "Fallout 3")]
+    [InlineData(GameName.FalloutNewVegas, "Fallout: New Vegas")]
+    [InlineData(GameName.Fallout4, "Fallout 4")]
+    [InlineData(GameName.Starfield, "Starfield")]
+    public void GetDisplayName_ShouldReturnExpectedDisplayNames(GameName gameName, string expectedDisplayName)
     {
-        var result = game.GetDisplayName();
+        var result = gameName.GetDisplayName();
 
         result.ShouldBe(expectedDisplayName);
     }
@@ -54,7 +54,7 @@ public class GameExtensionsTests
     [Fact]
     public void GetDisplayName_WhenCalledMultipleTimes_ShouldReturnConsistentResults()
     {
-        var game = Game.Tes5Skyrim;
+        var game = GameName.Tes5Skyrim;
 
         var result1 = game.GetDisplayName();
         var result2 = game.GetDisplayName();
@@ -63,16 +63,16 @@ public class GameExtensionsTests
     }
 
     [Theory]
-    [InlineData(Game.Tes4Oblivion)]
-    [InlineData(Game.Tes5Skyrim)]
-    [InlineData(Game.SkyrimSpecialEdition)]
-    [InlineData(Game.Fallout3)]
-    [InlineData(Game.FalloutNewVegas)]
-    [InlineData(Game.Fallout4)]
-    [InlineData(Game.Starfield)]
-    public void GetDisplayName_ShouldNotReturnNullOrEmpty(Game game)
+    [InlineData(GameName.Tes4Oblivion)]
+    [InlineData(GameName.Tes5Skyrim)]
+    [InlineData(GameName.SkyrimSpecialEdition)]
+    [InlineData(GameName.Fallout3)]
+    [InlineData(GameName.FalloutNewVegas)]
+    [InlineData(GameName.Fallout4)]
+    [InlineData(GameName.Starfield)]
+    public void GetDisplayName_ShouldNotReturnNullOrEmpty(GameName gameName)
     {
-        var result = game.GetDisplayName();
+        var result = gameName.GetDisplayName();
 
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();

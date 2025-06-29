@@ -38,28 +38,28 @@ public static class GameExtensions
         return displayAttribute?.Name ?? game.ToString();
     }
     
-    public static Core.Models.Game ToDomain(this Game game) => game switch
+    public static Core.Models.GameName ToDomain(this Game game) => game switch
     {
-        Game.Tes4Oblivion => Core.Models.Game.Tes4Oblivion,
-        Game.Tes5Skyrim => Core.Models.Game.Tes5Skyrim,
-        Game.SkyrimSpecialEdition => Core.Models.Game.SkyrimSpecialEdition,
-        Game.Fallout3 => Core.Models.Game.Fallout3,
-        Game.FalloutNewVegas => Core.Models.Game.FalloutNewVegas,
-        Game.Fallout4 => Core.Models.Game.Fallout4,
-        Game.Starfield => Core.Models.Game.Starfield,
+        Game.Tes4Oblivion => Core.Models.GameName.Tes4Oblivion,
+        Game.Tes5Skyrim => Core.Models.GameName.Tes5Skyrim,
+        Game.SkyrimSpecialEdition => Core.Models.GameName.SkyrimSpecialEdition,
+        Game.Fallout3 => Core.Models.GameName.Fallout3,
+        Game.FalloutNewVegas => Core.Models.GameName.FalloutNewVegas,
+        Game.Fallout4 => Core.Models.GameName.Fallout4,
+        Game.Starfield => Core.Models.GameName.Starfield,
         _ => throw new ArgumentOutOfRangeException(nameof(game), game, null)
     };
     
-    public static Game FromDomain(this Core.Models.Game domainGame) => domainGame switch
+    public static Game FromDomain(this Core.Models.GameName domainGameName) => domainGameName switch
     {
-        Core.Models.Game.Tes4Oblivion => Game.Tes4Oblivion,
-        Core.Models.Game.Tes5Skyrim => Game.Tes5Skyrim,
-        Core.Models.Game.SkyrimSpecialEdition => Game.SkyrimSpecialEdition,
-        Core.Models.Game.Fallout3 => Game.Fallout3,
-        Core.Models.Game.FalloutNewVegas => Game.FalloutNewVegas,
-        Core.Models.Game.Fallout4 => Game.Fallout4,
-        Core.Models.Game.Starfield => Game.Starfield,
-        _ => throw new ArgumentOutOfRangeException(nameof(domainGame), domainGame, null)
+        Core.Models.GameName.Tes4Oblivion => Game.Tes4Oblivion,
+        Core.Models.GameName.Tes5Skyrim => Game.Tes5Skyrim,
+        Core.Models.GameName.SkyrimSpecialEdition => Game.SkyrimSpecialEdition,
+        Core.Models.GameName.Fallout3 => Game.Fallout3,
+        Core.Models.GameName.FalloutNewVegas => Game.FalloutNewVegas,
+        Core.Models.GameName.Fallout4 => Game.Fallout4,
+        Core.Models.GameName.Starfield => Game.Starfield,
+        _ => throw new ArgumentOutOfRangeException(nameof(domainGameName), domainGameName, null)
     };
 }
 

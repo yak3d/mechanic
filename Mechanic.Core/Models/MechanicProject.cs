@@ -1,20 +1,23 @@
 namespace Mechanic.Core.Models;
 
 using Newtonsoft.Json;
+using Project.Models.Json;
 
 public class MechanicProject
 {
-    private Game game;
+    private GameName gameName;
 
     [JsonProperty("$schema")]
     public string Schema { get; } = "Mechanic.Core/ProjectFileSchema.json";
     public required string Id { get; init; }
 
-    public required Game Game
+    public required GameName GameName
     {
-        get => this.game;
-        init => this.game = value;
+        get => this.gameName;
+        init => this.gameName = value;
     }
+
+    public required string GamePath { get; init; }
 
     public List<SourceFile> SourceFiles { get; init; } = [];
     public List<GameFile> GameFiles { get; init; } = [];
@@ -55,12 +58,16 @@ public class MechanicProject
         return gameFile;
     }
 
-    public void ChangeGame(Game newGame) => this.game = newGame;
+    public void ChangeGame(GameName newGameName) => this.gameName = newGameName;
 
     public Project.Models.Json.MechanicProject ToJson() => new()
     {
         Id = this.Id,
-        Game = this.Game.ToJson(),
+        Game = new Game
+        {
+            Name = this.GameName.ToJson(),
+            Path = this.GamePath
+        },
         SourceFiles = [.. this.SourceFiles.Select(file => file.ToJson())],
         GameFiles = [.. this.GameFiles.Select(file => file.ToJson())]
     };
@@ -68,7 +75,8 @@ public class MechanicProject
     public static MechanicProject FromJsonObject(Project.Models.Json.MechanicProject jsonObject) => new MechanicProject
     {
         Id = jsonObject.Id,
-        Game = jsonObject.Game.FromJsonGame(),
+        GameName = jsonObject.Game.Name.FromJsonGame(),
+        GamePath = jsonObject.Game.Path,
         SourceFiles = [.. jsonObject.SourceFiles.Select(SourceFile.FromJsonProject)],
         GameFiles = [.. jsonObject.GameFiles.Select(GameFile.FromJson)]
     };

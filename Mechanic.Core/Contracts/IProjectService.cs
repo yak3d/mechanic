@@ -6,9 +6,9 @@ using Services.Errors;
 
 public interface IProjectService
 {
-    public Task<MechanicProject> InitializeAsync(string path, string projectId, Game game);
+    public Task<MechanicProject> InitializeAsync(string path, string projectId, GameName gameName);
     public Task<MechanicProject> GetCurrentProjectAsync();
-    public Task<MechanicProject> UpdateProjectGameAsync(Game game);
+    public Task<MechanicProject> UpdateProjectGameAsync(GameName gameName);
     public Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType);
     public Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType,
         Guid? id);

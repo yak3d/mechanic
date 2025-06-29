@@ -15,6 +15,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     private readonly Mock<ILogger<JsonProjectRepository>> _mockLogger;
     private readonly Mock<IFileService> _mockFileService;
     private readonly JsonProjectRepository _repository;
+    private const string TestGamePath = @"C:\Program Files (x86)\Steam\steamapps\common\Mechanic\Mechanic.exe";
 
     public JsonProjectRepositoryIntegrationTests()
     {
@@ -47,7 +48,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var expectedProject = new MechanicProject
         {
             Id = "test-project-123",
-            Game = Game.Tes4Oblivion
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath
         };
 
         await _repository.SaveCurrentProjectAsync(expectedProject);
@@ -55,7 +57,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(expectedProject.Id);
-        result.Game.ShouldBe(expectedProject.Game);
+        result.GameName.ShouldBe(expectedProject.GameName);
     }
 
     [Fact]
@@ -74,7 +76,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var project = new MechanicProject
         {
             Id = "integration-test-project",
-            Game = Game.Tes4Oblivion
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath
         };
 
         await _repository.SaveCurrentProjectAsync(project);
@@ -86,7 +89,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
 
         var jsonDocument = JsonDocument.Parse(fileContent);
         jsonDocument.RootElement.GetProperty("id").GetString().ShouldBe("integration-test-project");
-        jsonDocument.RootElement.GetProperty("game").GetInt32().ShouldBe((int)Game.Tes4Oblivion);
+        jsonDocument.RootElement.GetProperty("game").GetInt32().ShouldBe((int)GameName.Tes4Oblivion);
 
         fileContent.ShouldContain("  ");
     }
@@ -112,7 +115,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     public async Task InitializeProjectAsync_CreatesNewProjectWithSpecifiedValues()
     {
         const string projectId = "new-project-456";
-        const Game game = Game.Tes4Oblivion;
+        const GameName game = GameName.Tes4Oblivion;
 
         await _repository.InitializeProjectAsync(projectId, game);
 
@@ -121,7 +124,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var savedProject = await _repository.GetCurrentProjectAsync();
         savedProject.ShouldNotBeNull();
         savedProject.Id.ShouldBe(projectId);
-        savedProject.Game.ShouldBe(Game.Tes4Oblivion);
+        savedProject.GameName.ShouldBe(GameName.Tes4Oblivion);
     }
 
     [Fact]
@@ -130,7 +133,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var originalProject = new MechanicProject
         {
             Id = "roundtrip-test",
-            Game = Game.Tes4Oblivion
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath
         };
 
         await _repository.SaveCurrentProjectAsync(originalProject);
@@ -143,8 +147,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_OverwritesExistingFile()
     {
-        var firstProject = new MechanicProject { Id = "first", Game = Game.Tes4Oblivion };
-        var secondProject = new MechanicProject { Id = "second", Game = Game.Tes4Oblivion };
+        var firstProject = new MechanicProject { Id = "first", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
+        var secondProject = new MechanicProject { Id = "second", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(firstProject);
         await _repository.SaveCurrentProjectAsync(secondProject);
@@ -161,7 +165,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [InlineData("unicode-测试")]
     public async Task SaveAndRetrieve_WithVariousProjectIds_HandlesCorrectly(string projectId)
     {
-        var project = new MechanicProject { Id = projectId, Game = Game.Tes4Oblivion };
+        var project = new MechanicProject { Id = projectId, GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.GetCurrentProjectAsync();
@@ -184,7 +188,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_CallsFileServiceWithCorrectParameters()
     {
-        var project = new MechanicProject { Id = "test", Game = Game.Tes4Oblivion };
+        var project = new MechanicProject { Id = "test", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(project);
 
@@ -211,12 +215,12 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task InitializeProjectAsync_IgnoresPassedGameParameter()
     {
-        await _repository.InitializeProjectAsync("test-id", Game.Tes4Oblivion);
+        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion);
 
         var result = await _repository.GetCurrentProjectAsync();
 
         result.ShouldNotBeNull();
-        result.Game.ShouldBe(Game.Tes4Oblivion);
+        result.GameName.ShouldBe(GameName.Tes4Oblivion);
     }
 
     [Fact]

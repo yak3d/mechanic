@@ -42,7 +42,7 @@ public class MechanicProject
         return new Core.Models.MechanicProject
         {
             Id = Id,
-            Game = Game.ToDomain(),
+            GameName = Game.ToDomain(),
             SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
             GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
         };
@@ -53,7 +53,7 @@ public class MechanicProject
         return new MechanicProject
         {
             Id = domainProject.Id,
-            Game = domainProject.Game.FromDomain(),
+            Game = domainProject.GameName.FromDomain(),
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
             GameFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };

@@ -13,7 +13,7 @@ public class ProjectService(
     ILogger<ProjectService> logger,
     IProjectRepository projectRepository) : IProjectService
 {
-    public async Task<MechanicProject> InitializeAsync(string path, string projectId, Game game)
+    public async Task<MechanicProject> InitializeAsync(string path, string projectId, GameName gameName)
     {
         if (await projectRepository.ProjectExistsAsync())
         {
@@ -22,7 +22,7 @@ public class ProjectService(
 
         logger.ProjectInitializing(projectId, path);
 
-        await projectRepository.InitializeProjectAsync(projectId, game);
+        await projectRepository.InitializeProjectAsync(projectId, gameName);
         var project = await projectRepository.GetCurrentProjectAsync();
         return project ?? throw new InvalidOperationException("Project not found after initializing.");
     }
@@ -34,10 +34,10 @@ public class ProjectService(
         return project;
     }
 
-    public async Task<MechanicProject> UpdateProjectGameAsync(Game game)
+    public async Task<MechanicProject> UpdateProjectGameAsync(GameName gameName)
     {
         var project = await this.GetCurrentProjectAsync();
-        project.ChangeGame(game);
+        project.ChangeGame(gameName);
         await projectRepository.SaveCurrentProjectAsync(project);
 
         return project;

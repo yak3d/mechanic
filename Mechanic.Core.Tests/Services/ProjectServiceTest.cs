@@ -10,6 +10,7 @@ namespace Mechanic.Core.Tests.Services;
 
 public class ProjectServiceTest
 {
+    private const string TestGamePath = @"C:\Program Files (x86)\Steam\steamapps\common\Mechanic\Mechanic.exe";
     private readonly Mock<ILogger<ProjectService>> _mockLogger;
     private readonly Mock<IProjectRepository> _mockProjectRepository;
     private readonly ProjectService _projectService;
@@ -26,20 +27,22 @@ public class ProjectServiceTest
     {
         var path = "mechanic.json";
         var projectId = "com.example.MyProject";
-        var game = Game.SkyrimSpecialEdition;
+        var game = GameName.SkyrimSpecialEdition;
 
         _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game));
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = projectId,
-            Game = game
+            GameName = game,
+            GamePath = TestGamePath
         })!);
 
         var result = await _projectService.InitializeAsync(path, projectId, game);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
-        result.Game.ShouldBe(game);
+        result.GameName.ShouldBe(game);
+        result.GamePath.ShouldBe(TestGamePath);
         result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
@@ -52,7 +55,7 @@ public class ProjectServiceTest
     {
         var path = "mechanic.json";
         var projectId = "com.example.MyProject";
-        var game = Game.SkyrimSpecialEdition;
+        var game = GameName.SkyrimSpecialEdition;
 
         _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game)).Throws<InvalidOperationException>();
 
@@ -65,13 +68,15 @@ public class ProjectServiceTest
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = "com.example.MyProject",
-            Game = Game.SkyrimSpecialEdition
+            GameName = GameName.SkyrimSpecialEdition,
+            GamePath = TestGamePath
         })!);
 
         var result = await _projectService.GetCurrentProjectAsync();
         result.ShouldNotBeNull();
         result.Id.ShouldBe("com.example.MyProject");
-        result.Game.ShouldBe(Game.SkyrimSpecialEdition);
+        result.GameName.ShouldBe(GameName.SkyrimSpecialEdition);
+        result.GamePath.ShouldBe(TestGamePath);
     }
 
     [Fact]
@@ -88,11 +93,12 @@ public class ProjectServiceTest
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = "com.example.MyProject",
-            Game = Game.SkyrimSpecialEdition
+            GameName = GameName.SkyrimSpecialEdition,
+            GamePath = TestGamePath
         })!);
 
-        var result = await _projectService.UpdateProjectGameAsync(Game.Starfield);
-        result.Game.ShouldBe(Game.Starfield);
+        var result = await _projectService.UpdateProjectGameAsync(GameName.Starfield);
+        result.GameName.ShouldBe(GameName.Starfield);
 
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
         _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(result), Times.Once);
@@ -104,7 +110,8 @@ public class ProjectServiceTest
         var mechanicProject = new MechanicProject
         {
             Id = "com.example.MyProject",
-            Game = Game.SkyrimSpecialEdition
+            GameName = GameName.SkyrimSpecialEdition,
+            GamePath = TestGamePath
         };
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
@@ -131,10 +138,12 @@ public class ProjectServiceTest
     public async Task ProjectService_AddSourceFileAsync_AddsSourceFileWithId()
     {
         var existingGameFileId = Guid.NewGuid();
+        
         var mechanicProject = new MechanicProject
         {
             Id = "com.example.MyProject",
-            Game = Game.SkyrimSpecialEdition,
+            GameName = GameName.SkyrimSpecialEdition,
+            GamePath = TestGamePath,
             GameFiles = [
                 new GameFile
                 {
@@ -171,7 +180,8 @@ public class ProjectServiceTest
         var mechanicProject = new MechanicProject
         {
             Id = "com.example.MyProject",
-            Game = Game.SkyrimSpecialEdition,
+            GameName = GameName.SkyrimSpecialEdition,
+            GamePath = TestGamePath,
             GameFiles = [
                 new GameFile
                 {
