@@ -37,7 +37,7 @@ public static class GameExtensions
 
         return displayAttribute?.Name ?? gameName.ToString();
     }
-    
+
     public static Core.Models.GameName ToDomain(this GameName gameName) => gameName switch
     {
         GameName.Tes4Oblivion => Core.Models.GameName.Tes4Oblivion,
@@ -49,7 +49,7 @@ public static class GameExtensions
         GameName.Starfield => Core.Models.GameName.Starfield,
         _ => throw new ArgumentOutOfRangeException(nameof(gameName), gameName, null)
     };
-    
+
     public static GameName FromDomain(this Core.Models.GameName domainGameName) => domainGameName switch
     {
         Core.Models.GameName.Tes4Oblivion => GameName.Tes4Oblivion,

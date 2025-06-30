@@ -1,12 +1,11 @@
 namespace Mechanic.Core.Services;
 
 using Errors;
+using Infrastructure.Logging;
+using LanguageExt;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Microsoft.Extensions.Logging;
-
-using Infrastructure.Logging;
-using LanguageExt;
 using static LanguageExt.Prelude;
 
 public class ProjectService(

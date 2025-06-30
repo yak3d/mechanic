@@ -1,4 +1,4 @@
-﻿namespace Mechanic.Core.Contracts;
+namespace Mechanic.Core.Contracts;
 
 public interface IGameService
 {

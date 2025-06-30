@@ -1,14 +1,14 @@
-﻿namespace Mechanic.Core.Contracts;
+namespace Mechanic.Core.Contracts;
 
 using Constants;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using Infrastructure.Logging;
 using LanguageExt;
-using static LanguageExt.Prelude;
 using Microsoft.Extensions.Logging;
 using Models.Steam;
 using Services.Errors;
+using static LanguageExt.Prelude;
 
 public abstract class ISteamService(ILogger<ISteamService> logger, IFileService fileService)
 {
@@ -59,4 +59,5 @@ public abstract class ISteamService(ILogger<ISteamService> logger, IFileService 
         var property = token?.Children()?.FirstOrDefault(prop => prop is VProperty vProp && vProp.Key == key) as VProperty;
 
         return property?.Value is VValue value ? value.Value<string>() : null;
-    }}
+    }
+}

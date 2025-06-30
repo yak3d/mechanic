@@ -2,7 +2,6 @@ namespace Mechanic.Core.Models;
 
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Project.Models.Json;
 
 public enum GameName
 {

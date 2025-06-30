@@ -14,7 +14,7 @@ public class MechanicProject
         get => this._gameName;
         init => this._gameName = value;
     }
-    
+
     public required string GamePath { get; init; }
 
     public List<SourceFile> SourceFiles { get; private init; } = [];
@@ -50,7 +50,7 @@ public class MechanicProject
             GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
         };
     }
-    
+
     public static MechanicProject FromDomain(Core.Models.MechanicProject domainProject)
     {
         return new MechanicProject

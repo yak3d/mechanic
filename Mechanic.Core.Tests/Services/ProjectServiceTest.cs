@@ -133,12 +133,12 @@ public class ProjectServiceTest
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
         _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
     }
-    
+
     [Fact]
     public async Task ProjectService_AddSourceFileAsync_AddsSourceFileWithId()
     {
         var existingGameFileId = Guid.NewGuid();
-        
+
         var mechanicProject = new MechanicProject
         {
             Id = "com.example.MyProject",
@@ -172,7 +172,7 @@ public class ProjectServiceTest
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
         _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
     }
-    
+
     [Fact]
     public async Task ProjectService_AddSourceFileAsync_AddsSourceFileWithBadIdGetsError()
     {

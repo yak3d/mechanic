@@ -20,7 +20,7 @@ public static class GameFileTypeExtensions
         GameFileType.PapyrusExecutable => Core.Models.GameFileType.PapyrusExecutable,
         _ => throw new ArgumentOutOfRangeException(nameof(gameFileType), gameFileType, null)
     };
-    
+
     public static GameFileType FromDomain(this Core.Models.GameFileType domainGameFileType) => domainGameFileType switch
     {
         Core.Models.GameFileType.Other => GameFileType.Other,

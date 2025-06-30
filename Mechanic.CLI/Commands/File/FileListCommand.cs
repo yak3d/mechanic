@@ -16,16 +16,16 @@ public class FileListCommand(IProjectService projectService) : AsyncCommand
         foreach (var sf in project.SourceFiles)
         {
             var fileNode = new TreeNode(new Text($"{sf.Path}"));
-    
+
             await BuildGameFileLinkTree(sf, fileNode);
-    
+
             sourceFileRoot.AddNode(fileNode);
         }
-        
+
         var gameFiles = project.GameFiles.OrderBy(static f => f.Path).Select(gf => new Text($"{gf.Path} ({gf.Id})"));
         var gameFilesRoot = new Tree("Game Files");
         gameFilesRoot.AddNodes(gameFiles);
-        
+
         AnsiConsole.Write(new Rows(
                 sourceFileRoot,
                 Text.NewLine,

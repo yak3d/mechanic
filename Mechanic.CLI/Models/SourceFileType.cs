@@ -22,7 +22,7 @@ public static class SourceFileTypeExtensions
         SourceFileType.Other => Core.Models.SourceFileType.Other,
         _ => throw new ArgumentOutOfRangeException(nameof(sourceFileType), sourceFileType, null)
     };
-    
+
     public static SourceFileType FromDomain(this Core.Models.SourceFileType domainSourceFileType) => domainSourceFileType switch
     {
         Core.Models.SourceFileType.Fbx => SourceFileType.Fbx,

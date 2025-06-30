@@ -1,4 +1,4 @@
-﻿namespace Mechanic.Core.Services;
+namespace Mechanic.Core.Services;
 
 using Contracts;
 using Errors;
@@ -6,11 +6,9 @@ using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using Infrastructure.Logging;
 using LanguageExt;
-using static LanguageExt.Prelude;
-using LanguageExt.Common;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using Models.Steam;
+using static LanguageExt.Prelude;
 
 public class WindowsSteamService(
     ILogger<WindowsSteamService> logger,
@@ -34,7 +32,7 @@ public class WindowsSteamService(
         return await libraryPaths.Match(
             Right: async paths =>
             {
-                logger.FoundSteamLibraries(paths.ToArray());
+                logger.FoundSteamLibraries([.. paths]);
                 foreach (var libraryPath in paths)
                 {
                     var steamAppsPath = Path.Combine(libraryPath, SteamappsDirectory);
@@ -53,7 +51,9 @@ public class WindowsSteamService(
                             var gameResult = await this.ParseGameManifestAsync(manifestFile, steamAppsPath);
 
                             if (gameResult.IsLeft)
+                            {
                                 return gameResult.Map(_ => new List<SteamGame>());
+                            }
 
                             allGames.Add(gameResult.RightAsEnumerable().First());
                         }
@@ -65,7 +65,7 @@ public class WindowsSteamService(
                     }
                 }
 
-                return Right<SteamManifestError, List<SteamGame>>(allGames.OrderBy(g => g.Name).ToList());
+                return Right<SteamManifestError, List<SteamGame>>([.. allGames.OrderBy(g => g.Name)]);
             },
             Left: error => Task.FromResult(Left<SteamManifestError, List<SteamGame>>(error))
         );
@@ -106,7 +106,7 @@ public class WindowsSteamService(
                 var vdfContent = await this.fileService.ReadAllText(libraryFoldersPath);
                 var libraryData = VdfConvert.Deserialize(vdfContent);
 
-                var libraryFolders = libraryData.Value as VToken;
+                var libraryFolders = libraryData.Value;
 
                 libraryFolders.Children().ToList().ForEach(async folder =>
                 {
@@ -115,7 +115,7 @@ public class WindowsSteamService(
                         return;
                     }
 
-                    var folderData = property.Value as VToken;
+                    var folderData = property.Value;
                     var pathProperty =
                         folderData.Children()
                             .FirstOrDefault(p => p is VProperty { Key: "path" }) as VProperty;

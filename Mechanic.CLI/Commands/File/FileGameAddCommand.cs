@@ -36,7 +36,7 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
             : Enum.Parse<GameFileType>(settings.Type, true);
 
         await projectService.AddGameFileAsync(settings.GamePath, fileType.ToDomain());
-        
+
         return 0;
     }
 
@@ -50,9 +50,9 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
             ".pex" => GameFileType.PapyrusExecutable,
             _ => GameFileType.Other
         };
-        
+
         logger.AssumingGameFileType(gameFileType, Path.GetExtension(file));
-        
+
         return gameFileType;
     }
 }

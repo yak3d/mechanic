@@ -6,7 +6,6 @@ using Contracts;
 using Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
 using Models;
-using Newtonsoft.Json.Linq;
 
 public class JsonProjectRepository(
     ILogger<JsonProjectRepository> logger,
@@ -70,9 +69,10 @@ public class JsonProjectRepository(
     private static JsonObject PrependSchema(JsonNode jsonNode, string schemaUrl)
     {
         var originalObject = jsonNode.AsObject();
-        var newJsonObject = new JsonObject();
-
-        newJsonObject["$schema"] = schemaUrl;
+        var newJsonObject = new JsonObject
+        {
+            ["$schema"] = schemaUrl
+        };
 
         foreach (var kvp in originalObject)
         {

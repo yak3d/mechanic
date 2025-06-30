@@ -21,7 +21,7 @@ public class InitializeCommand(IProjectService projectService, ISteamService ste
         [Description("The game the mod project is for.")]
         [CommandOption("-n|--game-name")]
         public string? GameName { get; init; }
-        
+
         [Description("The path to the game the mod project is for.")]
         [CommandOption("-g|--game-path")]
         public string? GamePath { get; init; }
@@ -40,7 +40,7 @@ public class InitializeCommand(IProjectService projectService, ISteamService ste
         string projectId = settings.ProjectId ?? PromptForProjectId();
 
         GameName gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
-        
+
         string gamePath = settings.GamePath ?? await PromptForGamePath();
 
         await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, gameName.ToDomain(), gamePath);

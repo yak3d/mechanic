@@ -1,6 +1,6 @@
-﻿namespace Mechanic.Core.Services.Errors;
+namespace Mechanic.Core.Services.Errors;
 
 public class ProjectError
 {
-    
+
 }

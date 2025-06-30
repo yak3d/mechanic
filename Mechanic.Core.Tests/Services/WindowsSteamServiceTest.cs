@@ -49,7 +49,7 @@ public class WindowsSteamServiceTest : IDisposable
 
         result.ShouldBe(expectedPath);
     }
-   
+
     [Fact]
     public void GetSteamInstallPath_When64BitKeyExists_And32BitDoesNot_Returns64BitPath()
     {
@@ -63,7 +63,7 @@ public class WindowsSteamServiceTest : IDisposable
 
         result.ShouldBe(expected64BitPath);
     }
-    
+
     [Fact]
     public void GetSteamInstallPath_WhenNoRegistryKeysExist_ReturnsDefaultPath()
     {
@@ -75,7 +75,7 @@ public class WindowsSteamServiceTest : IDisposable
         result.ShouldBe(DefaultSteamDirectory);
     }
     #endregion
-    
+
     #region GetInstalledGames Tests
     [Fact]
     public async Task GetInstalledGames_WhenNoLibraryPaths_ReturnsEmptyList()
@@ -87,8 +87,8 @@ public class WindowsSteamServiceTest : IDisposable
 
         result.IsLeft.ShouldBeTrue();
     }
-    
-    
+
+
     [Fact]
     public async Task GetInstalledGames_WithValidManifests_ReturnsGameList()
     {
@@ -124,7 +124,7 @@ public class WindowsSteamServiceTest : IDisposable
             games[0].InstallDir.ShouldBe("testgame");
         });
     }
-    
+
     [Fact]
     public async Task GetInstalledGames_WithMultipleLibraries_CombinesResults()
     {
@@ -144,8 +144,8 @@ public class WindowsSteamServiceTest : IDisposable
                      		""path""		""{steamPath2.Replace("\\", "\\\\")}""
                      	}}
                      }}
-                     """"";;
-        
+                     """""; ;
+
         var manifestFile1 = Path.Combine(steamAppsPath1, "appmanifest_12345.acf");
         var manifestFileContents1 = VdfTestUtils.BuildFullAppState("12345", "Game One", "testgame");
         var manifestFile2 = Path.Combine(steamAppsPath2, "appmanifest_54321.acf");
@@ -178,7 +178,7 @@ public class WindowsSteamServiceTest : IDisposable
             games.Any(g => g.Name == "Game Two").ShouldBeTrue();
         });
     }
-    
+
     [Fact]
     public async Task GetInstalledGames_WithCorruptedManifest_ReturnsError()
     {

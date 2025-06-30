@@ -6,7 +6,7 @@ public class SourceFile : CLI.Models.ProjectFile
 {
     public required SourceFileType FileType { get; init; }
     public List<Guid> DestinationPaths { get; init; } = [];
-    
+
     public Core.Models.SourceFile ToDomain()
     {
         return new Core.Models.SourceFile
@@ -17,7 +17,7 @@ public class SourceFile : CLI.Models.ProjectFile
             GameFileLinks = [.. DestinationPaths]
         };
     }
-    
+
     public static SourceFile FromDomain(Core.Models.SourceFile domainSourceFile)
     {
         return new SourceFile

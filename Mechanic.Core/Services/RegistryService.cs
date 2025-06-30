@@ -1,4 +1,4 @@
-﻿namespace Mechanic.Core.Services;
+namespace Mechanic.Core.Services;
 
 using System.Runtime.Versioning;
 using Contracts;

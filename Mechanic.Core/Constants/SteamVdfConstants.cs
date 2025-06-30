@@ -1,4 +1,4 @@
-﻿namespace Mechanic.Core.Constants;
+namespace Mechanic.Core.Constants;
 
 public static class SteamVdfConstants
 {

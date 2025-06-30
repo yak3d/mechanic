@@ -15,7 +15,7 @@ public class GameFile : ProjectFile
             GameFileType = GameFileType.ToDomain()
         };
     }
-    
+
     public static GameFile FromDomain(Core.Models.GameFile domainGameFile)
     {
         return new GameFile

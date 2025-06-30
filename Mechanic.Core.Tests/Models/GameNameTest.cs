@@ -29,7 +29,8 @@ public class GameNameTest
     [InlineData(GameName.Fallout3, Project.Models.Json.GameName.Fallout3)]
     [InlineData(GameName.FalloutNewVegas, Project.Models.Json.GameName.FalloutNewVegas)]
     [InlineData(GameName.Fallout4, Project.Models.Json.GameName.Fallout4)]
-    [InlineData(GameName.Starfield, Project.Models.Json.GameName.Starfield)]    public void ToJson_ConvertsEachEnum_Properly(GameName input, Project.Models.Json.GameName expected)
+    [InlineData(GameName.Starfield, Project.Models.Json.GameName.Starfield)]
+    public void ToJson_ConvertsEachEnum_Properly(GameName input, Project.Models.Json.GameName expected)
     {
         var result = input.ToJson();
 

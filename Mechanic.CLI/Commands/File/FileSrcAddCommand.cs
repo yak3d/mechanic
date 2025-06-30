@@ -58,7 +58,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
             logger.SourceFileAlreadyExists(settings.SourcePath);
             return -3;
         }
-    
+
         GameFile? selectedGameFile = null;
         if (settings.GameFile == null)
         {
@@ -80,7 +80,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
         else
         {
             var gameFile = await projectService.FindGameFileByIdAsync(Guid.Parse(settings.GameFile));
-            
+
             if (gameFile != null)
             {
                 selectedGameFile = GameFile.FromDomain(gameFile);
@@ -88,7 +88,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
         }
 
         var result = await projectService.AddSourceFileAsync(
-            settings.SourcePath, 
+            settings.SourcePath,
             fileType.ToDomain(),
             selectedGameFile?.Id
         );
@@ -104,7 +104,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
                 {
                     logger.AddedSourceFile(file.Path, file.Id);
                 }
-                
+
                 return 0;
             },
             Left: error =>
@@ -130,7 +130,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
                 .MoreChoicesText("[grey](More)[/]")
                 .AddChoiceGroup(new GameFileChoiceHeader(), similarGameFiles.Select(gf => new GameFileChoice(gf)))
                 .AddChoiceGroup(new ActionsChoiceHeader(), new CancelChoice(), new AllGamesChoice())
-                .UseConverter(id => 
+                .UseConverter(id =>
                 {
                     if (id is AllGamesChoice)
                     {
@@ -140,7 +140,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
                     return id.ToString();
                 })
         );
-        
+
         return chosenGameFileId;
     }
 
@@ -180,7 +180,7 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
 
         return bestMatch;
     }
-    
+
     private static SourceFileType AssumeFileType(string fileExtension) => fileExtension switch
     {
         ".fbx" => SourceFileType.Fbx,

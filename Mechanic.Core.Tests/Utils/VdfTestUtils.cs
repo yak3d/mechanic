@@ -4,7 +4,7 @@ public static class VdfTestUtils
 {
     public static string BuildSimpleLibraryFolder(string path)
     {
-	    var escapedPath = path.Replace("\\", "\\\\");
+        var escapedPath = path.Replace("\\", "\\\\");
         return $@"""libraryfolders""
                      {{
                      	""0""
@@ -23,7 +23,7 @@ public static class VdfTestUtils
                      }}
                      """"";
     }
-    
+
     public static string BuildFullAppState(
         string appId,
         string name,
