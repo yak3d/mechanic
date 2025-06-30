@@ -5,15 +5,17 @@ namespace Mechanic.CLI.Models;
 
 public class MechanicProject
 {
-    private Game game;
+    private GameName _gameName;
 
     public required string Id { get; init; }
 
-    public required CLI.Models.Game Game
+    public required CLI.Models.GameName GameName
     {
-        get => this.game;
-        init => this.game = value;
+        get => this._gameName;
+        init => this._gameName = value;
     }
+    
+    public required string GamePath { get; init; }
 
     public List<SourceFile> SourceFiles { get; private init; } = [];
     public List<CLI.Models.GameFile> GameFiles { get; init; } = [];
@@ -42,7 +44,8 @@ public class MechanicProject
         return new Core.Models.MechanicProject
         {
             Id = Id,
-            GameName = Game.ToDomain(),
+            GameName = GameName.ToDomain(),
+            GamePath = GamePath,
             SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
             GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
         };
@@ -53,7 +56,8 @@ public class MechanicProject
         return new MechanicProject
         {
             Id = domainProject.Id,
-            Game = domainProject.GameName.FromDomain(),
+            GameName = domainProject.GameName.FromDomain(),
+            GamePath = domainProject.GamePath,
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
             GameFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };

@@ -53,12 +53,12 @@ public class JsonProjectRepository(
 
     public async Task<bool> ProjectExistsAsync() => await Task.FromResult(File.Exists(projectFilePath));
 
-    public async Task InitializeProjectAsync(string id, GameName gameName) =>
+    public async Task InitializeProjectAsync(string id, GameName gameName, string gamePath) =>
         await this.SaveCurrentProjectAsync(new MechanicProject
         {
             Id = id,
             GameName = GameName.Tes4Oblivion,
-            GamePath = "TODO"
+            GamePath = gamePath
         });
 
     public async Task<GameFile?> FindGameFileByIdAsync(Guid id)

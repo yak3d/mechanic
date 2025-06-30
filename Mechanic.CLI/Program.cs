@@ -21,6 +21,10 @@ registrations.AddLogging(builder => builder.AddSerilog());
 registrations.AddSingleton<IFileService, FileService>();
 registrations.AddSingleton<IProjectRepository, JsonProjectRepository>();
 registrations.AddSingleton<IProjectService, ProjectService>();
+#if WINDOWS
+registrations.AddSingleton<IRegistryService, RegistryService>();
+#endif
+registrations.AddSingleton<ISteamService, WindowsSteamService>();
 
 var registrar = new TypeRegistrar(registrations);
 

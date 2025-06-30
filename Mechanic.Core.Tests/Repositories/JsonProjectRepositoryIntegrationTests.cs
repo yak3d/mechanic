@@ -89,7 +89,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
 
         var jsonDocument = JsonDocument.Parse(fileContent);
         jsonDocument.RootElement.GetProperty("id").GetString().ShouldBe("integration-test-project");
-        jsonDocument.RootElement.GetProperty("game").GetInt32().ShouldBe((int)GameName.Tes4Oblivion);
+        jsonDocument.RootElement.GetProperty("game").GetProperty("name").GetString().ShouldBe(Project.Models.Json.GameName.TES4Oblivion.ToString());
+        jsonDocument.RootElement.GetProperty("game").GetProperty("path").GetString().ShouldBe(TestGamePath);
 
         fileContent.ShouldContain("  ");
     }
@@ -117,7 +118,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         const string projectId = "new-project-456";
         const GameName game = GameName.Tes4Oblivion;
 
-        await _repository.InitializeProjectAsync(projectId, game);
+        await _repository.InitializeProjectAsync(projectId, game, TestGamePath);
 
         File.Exists(_testProjectFile).ShouldBeTrue();
 
@@ -215,7 +216,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task InitializeProjectAsync_IgnoresPassedGameParameter()
     {
-        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion);
+        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion, TestGamePath);
 
         var result = await _repository.GetCurrentProjectAsync();
 

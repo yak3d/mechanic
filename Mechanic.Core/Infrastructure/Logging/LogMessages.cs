@@ -40,4 +40,7 @@ public static partial class LogMessages
     public static partial void ProjectDeserializingError(this ILogger logger, string projectPath, JsonException exception);
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to parse steam manifest")]
     public static partial void SteamManifestDeserializingError(this ILogger logger, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Found steam libraries in {SteamLibraries}")]
+    public static partial void FoundSteamLibraries(this ILogger logger, string[] steamLibraries);
 }

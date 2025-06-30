@@ -4,6 +4,7 @@ using Contracts;
 using Errors;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
+using Infrastructure.Logging;
 using LanguageExt;
 using static LanguageExt.Prelude;
 using LanguageExt.Common;
@@ -11,50 +12,62 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Models.Steam;
 
-public class WindowsSteamService(ILogger<WindowsSteamService> logger, IRegistryService registryService) : ISteamService(logger)
+public class WindowsSteamService(
+    ILogger<WindowsSteamService> logger,
+    IRegistryService registryService,
+    IFileService fileService)
+    : ISteamService(logger, fileService)
 {
+    private readonly IFileService fileService = fileService;
+
     private const string SteamappsDirectory = "steamapps";
     private const string SteamRegistryKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam";
     private const string SteamRegistryKey64Bit = @"HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam";
     private const string SteamRegistryInstallPathKey = "InstallPath";
     private const string DefaultSteamDirectory = @"C:\Program Files (x86)\Steam";
 
-    public override Either<SteamManifestError, List<SteamGame>> GetInstalledGames()
+    public override async Task<Either<SteamManifestError, List<SteamGame>>> GetInstalledGamesAsync()
     {
         var allGames = new List<SteamGame>();
-        var libraryPaths = this.GetLibraryPaths();
+        var libraryPaths = await this.GetLibraryPathsAsync();
 
-        return libraryPaths.Match(
-            Right: paths =>
+        return await libraryPaths.Match(
+            Right: async paths =>
             {
+                logger.FoundSteamLibraries(paths.ToArray());
                 foreach (var libraryPath in paths)
                 {
                     var steamAppsPath = Path.Combine(libraryPath, SteamappsDirectory);
-                    if (!Directory.Exists(steamAppsPath)) continue;
-
-                    var manifestFilesResult = Try(() => Directory.GetFiles(steamAppsPath, "appmanifest_*.acf"))
-                        .ToEither(ex =>
-                            (SteamManifestError)new SteamManifestError.IoError("ManifestEnumeration", ex.Message));
-
-                    if (manifestFilesResult.IsLeft)
-                        return manifestFilesResult.Map(_ => new List<SteamGame>());
-
-                    var manifestFiles = manifestFilesResult.RightAsEnumerable().First();
-
-                    foreach (var manifestFile in manifestFiles)
+                    if (!await this.fileService.DirectoryExists(steamAppsPath))
                     {
-                        var gameResult = this.ParseGameManifest(manifestFile, steamAppsPath);
+                        continue;
+                    }
 
-                        if (gameResult.IsLeft)
-                            return gameResult.Map(_ => new List<SteamGame>());
+                    try
+                    {
+                        var manifestFiles =
+                            await this.fileService.GetFilesFromDirectoryAsync(steamAppsPath, "appmanifest_*.acf");
 
-                        allGames.Add(gameResult.RightAsEnumerable().First());
+                        foreach (var manifestFile in manifestFiles)
+                        {
+                            var gameResult = await this.ParseGameManifestAsync(manifestFile, steamAppsPath);
+
+                            if (gameResult.IsLeft)
+                                return gameResult.Map(_ => new List<SteamGame>());
+
+                            allGames.Add(gameResult.RightAsEnumerable().First());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return Left<SteamManifestError, List<SteamGame>>(
+                            new SteamManifestError.IoError("ManifestEnumeration", ex.Message));
                     }
                 }
 
-                return allGames.OrderBy(g => g.Name).ToList();
+                return Right<SteamManifestError, List<SteamGame>>(allGames.OrderBy(g => g.Name).ToList());
             },
-            Left: error => error
+            Left: error => Task.FromResult(Left<SteamManifestError, List<SteamGame>>(error))
         );
     }
 
@@ -72,7 +85,7 @@ public class WindowsSteamService(ILogger<WindowsSteamService> logger, IRegistryS
         }
     }
 
-    protected override Either<SteamManifestError, List<string>> GetLibraryPaths()
+    protected override async Task<Either<SteamManifestError, List<string>>> GetLibraryPathsAsync()
     {
         var libraryPaths = new List<string>();
         var steamPath = this.GetSteamInstallPath();
@@ -90,12 +103,12 @@ public class WindowsSteamService(ILogger<WindowsSteamService> logger, IRegistryS
 
             if (File.Exists(libraryFoldersPath))
             {
-                var vdfContent = File.ReadAllText(libraryFoldersPath);
+                var vdfContent = await this.fileService.ReadAllText(libraryFoldersPath);
                 var libraryData = VdfConvert.Deserialize(vdfContent);
 
                 var libraryFolders = libraryData.Value as VToken;
 
-                libraryFolders.Children().ToList().ForEach(folder =>
+                libraryFolders.Children().ToList().ForEach(async folder =>
                 {
                     if (folder is not VProperty property || !int.TryParse(property.Key, out _))
                     {
@@ -112,8 +125,9 @@ public class WindowsSteamService(ILogger<WindowsSteamService> logger, IRegistryS
                         return;
                     }
 
-                    var libraryPath = pathProperty.Value<string>();
-                    if (!string.IsNullOrEmpty(libraryPath) && Directory.Exists(libraryPath))
+                    var libraryPath = pathProperty.Value.ToString();
+                    var libraryExists = await this.fileService.DirectoryExists(libraryPath);
+                    if (!string.IsNullOrEmpty(libraryPath) && libraryExists)
                     {
                         libraryPaths.Add(libraryPath);
                     }

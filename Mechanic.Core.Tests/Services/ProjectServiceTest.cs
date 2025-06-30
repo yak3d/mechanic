@@ -29,7 +29,7 @@ public class ProjectServiceTest
         var projectId = "com.example.MyProject";
         var game = GameName.SkyrimSpecialEdition;
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game));
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath));
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = projectId,
@@ -37,7 +37,7 @@ public class ProjectServiceTest
             GamePath = TestGamePath
         })!);
 
-        var result = await _projectService.InitializeAsync(path, projectId, game);
+        var result = await _projectService.InitializeAsync(path, projectId, game, TestGamePath);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
@@ -46,7 +46,7 @@ public class ProjectServiceTest
         result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
-        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath), Times.Once);
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
     }
 
@@ -57,9 +57,9 @@ public class ProjectServiceTest
         var projectId = "com.example.MyProject";
         var game = GameName.SkyrimSpecialEdition;
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game)).Throws<InvalidOperationException>();
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath)).Throws<InvalidOperationException>();
 
-        await _projectService.InitializeAsync(path, projectId, game).ShouldThrowAsync<InvalidOperationException>();
+        await _projectService.InitializeAsync(path, projectId, game, TestGamePath).ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]

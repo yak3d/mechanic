@@ -1,5 +1,6 @@
 ﻿namespace Mechanic.Core.Contracts;
 
+using Constants;
 using Gameloop.Vdf;
 using Gameloop.Vdf.Linq;
 using Infrastructure.Logging;
@@ -9,26 +10,31 @@ using Microsoft.Extensions.Logging;
 using Models.Steam;
 using Services.Errors;
 
-public abstract class ISteamService(ILogger<ISteamService> logger)
+public abstract class ISteamService(ILogger<ISteamService> logger, IFileService fileService)
 {
-    public abstract Either<SteamManifestError, List<SteamGame>> GetInstalledGames();
+    public abstract Task<Either<SteamManifestError, List<SteamGame>>> GetInstalledGamesAsync();
     public abstract string GetSteamInstallPath();
-    protected abstract Either<SteamManifestError, List<string>> GetLibraryPaths();
+    protected abstract Task<Either<SteamManifestError, List<string>>> GetLibraryPathsAsync();
 
-    protected Either<SteamManifestError, SteamGame> ParseGameManifest(string manifestPath, string steamAppsPath)
+    protected async Task<Either<SteamManifestError, SteamGame>> ParseGameManifestAsync(string manifestPath, string steamAppsPath)
     {
         try
         {
-            var vdfContent = File.ReadAllText(manifestPath);
+            var vdfContent = await fileService.ReadAllText(manifestPath);
             var manifestData = VdfConvert.Deserialize(vdfContent);
 
             var appState = manifestData.Value;
 
-            var appId = GetVdfValue(appState, "appId");
-            var name = GetVdfValue(appState, "name");
-            var installDir = GetVdfValue(appState, "installdir");
-            var lastUpdated = GetVdfValue(appState, "LastUpdated");
+            var appId = GetVdfValue(appState, SteamVdfConstants.AppIdKey);
+            var name = GetVdfValue(appState, SteamVdfConstants.AppNameKey);
+            var installDir = GetVdfValue(appState, SteamVdfConstants.AppInstallDirKey);
+            var lastUpdated = GetVdfValue(appState, SteamVdfConstants.AppLastUpdatedKey);
 
+            if (string.IsNullOrEmpty(installDir))
+            {
+                return Left<SteamManifestError, SteamGame>(
+                    new SteamManifestError.VdfParseError(manifestPath, "Missing install directory"));
+            }
             var fullPath = Path.Combine(steamAppsPath, "common", installDir);
 
             return new SteamGame(
