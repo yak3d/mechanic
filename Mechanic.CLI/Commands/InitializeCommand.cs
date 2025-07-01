@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Mechanic.CLI.Commands.File;
 using Mechanic.CLI.Models;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
@@ -37,11 +38,11 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        string projectId = settings.ProjectId ?? PromptForProjectId();
+        var projectId = settings.ProjectId ?? PromptForProjectId();
 
-        GameName gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
+        var gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
 
-        string gamePath = settings.GamePath ?? await PromptForGamePath();
+        var gamePath = settings.GamePath ?? await PromptForGamePath();
 
         await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, gameName.ToDomain(), gamePath);
 
@@ -53,22 +54,35 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         var games = await steamService.GetInstalledGamesAsync();
 
         return games.Match(
-            Right: games =>
+            Right: steamGames =>
             {
-                return AnsiConsole.Prompt(
-                    new SelectionPrompt<SteamGame>()
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<PromptChoice>()
                         .Title("Choose the game to set the game path")
                         .PageSize(10)
                         .MoreChoicesText("[grey](More)[/]")
-                        .AddChoices(games)
-                        .UseConverter(game => $"{game.Name} ({game.FullPath})")
-                ).FullPath;
+                        .AddChoiceGroup(new SteamGameChoiceHeader(), steamGames.Select(g => new SteamGameChoice(g)))
+                        .AddChoiceGroup(new ActionsHeader(), new NoGamesMatchChoice())
+                        .UseConverter(choice => choice.ToString())
+                );
+
+                if (choice is SteamGameChoice steamGameChoice)
+                {
+                    return steamGameChoice.game.FullPath;
+                }
+
+                return PromptForGamePathText();
             },
-            Left: _ => AnsiConsole.Prompt(
-                new TextPrompt<string>(
-                    "Enter the path to the root game directory:"
-                )
-            ));
+            Left: _ => PromptForGamePathText());
+    }
+
+    private static string PromptForGamePathText()
+    {
+        return AnsiConsole.Prompt(
+            new TextPrompt<string>(
+                "Enter the path to the root game directory:"
+            )
+        );
     }
 
     private string PromptForProjectId()
@@ -91,4 +105,11 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
                 .UseConverter(game => game.GetDisplayName())
         );
     }
+
+    private record SteamGameChoiceHeader() : PromptChoice("Installed Steam Games");
+
+    private record SteamGameChoice(SteamGame game) : PromptChoice($"{game.Name} ({game.FullPath})");
+
+    private record ActionsHeader() : PromptChoice("Actions");
+    private record NoGamesMatchChoice() : PromptChoice("None of these");
 }

@@ -16,7 +16,7 @@ using SourceFileType = Mechanic.CLI.Models.SourceFileType;
 
 namespace Mechanic.CLI.Commands.File;
 
-public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectService projectService) : AsyncCommand<FileSrcAddCommand.Settings>
+public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectService projectService) : AsyncCommand<FileSrcAddCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -34,18 +34,13 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
         public string? GameFile { get; init; }
     }
 
-    private abstract record GameChoice(string DisplayName)
-    {
-        public sealed override string ToString() => DisplayName;
-    }
+    private record PromptFileChoiceHeader() : PromptChoice("Game Files");
+    private record PromptFileChoice(GameFile GameFile) : PromptChoice($"{GameFile.Path} ({GameFile.Id})");
 
-    private record GameFileChoiceHeader() : GameChoice("Game Files");
-    private record GameFileChoice(GameFile GameFile) : GameChoice($"{GameFile.Path} ({GameFile.Id})");
+    private record ActionsChoiceHeader() : PromptChoice("If none match:");
+    private record CancelChoice() : PromptChoice("Cancel");
 
-    private record ActionsChoiceHeader() : GameChoice("If none match:");
-    private record CancelChoice() : GameChoice("Cancel");
-
-    private record AllGamesChoice() : GameChoice("Choose from all game files");
+    private record AllPromptsChoice() : PromptChoice("Choose from all game files");
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
@@ -71,8 +66,8 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
 
                 selectedGameFile = choice switch
                 {
-                    AllGamesChoice => ((GameFileChoice)await PromptForAllGameFiles()).GameFile,
-                    GameFileChoice gameFileChoice => gameFileChoice.GameFile,
+                    AllPromptsChoice => ((PromptFileChoice)await PromptForAllGameFiles()).GameFile,
+                    PromptFileChoice gameFileChoice => gameFileChoice.GameFile,
                     _ => selectedGameFile
                 };
             }
@@ -120,19 +115,19 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
             });
     }
 
-    private GameChoice PromptForPossibleGameFiles(Settings settings, List<string> gameFileChoices, List<GameFile> similarGameFiles)
+    private PromptChoice PromptForPossibleGameFiles(Settings settings, List<string> gameFileChoices, List<GameFile> similarGameFiles)
     {
         var chosenGameFileId = AnsiConsole.Prompt(
-            new SelectionPrompt<GameChoice>()
+            new SelectionPrompt<PromptChoice>()
                 .Title(
                     $"Found existing [purple]game files[/] that may match this [green]source file[/]: {settings.SourcePath}")
                 .PageSize(10)
                 .MoreChoicesText("[grey](More)[/]")
-                .AddChoiceGroup(new GameFileChoiceHeader(), similarGameFiles.Select(gf => new GameFileChoice(gf)))
-                .AddChoiceGroup(new ActionsChoiceHeader(), new CancelChoice(), new AllGamesChoice())
+                .AddChoiceGroup(new PromptFileChoiceHeader(), similarGameFiles.Select(gf => new PromptFileChoice(gf)))
+                .AddChoiceGroup(new ActionsChoiceHeader(), new CancelChoice(), new AllPromptsChoice())
                 .UseConverter(id =>
                 {
-                    if (id is AllGamesChoice)
+                    if (id is AllPromptsChoice)
                     {
                         return id.ToString();
                     }
@@ -144,15 +139,15 @@ public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectServic
         return chosenGameFileId;
     }
 
-    private async Task<GameChoice> PromptForAllGameFiles()
+    private async Task<PromptChoice> PromptForAllGameFiles()
     {
         var allGameFiles = Models.MechanicProject.FromDomain(await projectService.GetCurrentProjectAsync()).GameFiles;
         return AnsiConsole.Prompt(
-            new SelectionPrompt<GameChoice>()
+            new SelectionPrompt<PromptChoice>()
                 .Title("All game files")
                 .PageSize(10)
                 .MoreChoicesText("[grey](More)[/]")
-                .AddChoiceGroup(new GameFileChoiceHeader(), allGameFiles.OrderByDescending(gf => gf.Path).Select(gf => new GameFileChoice(gf)))
+                .AddChoiceGroup(new PromptFileChoiceHeader(), allGameFiles.OrderByDescending(gf => gf.Path).Select(gf => new PromptFileChoice(gf)))
             );
     }
 
