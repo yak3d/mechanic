@@ -45,7 +45,7 @@ public class JsonProjectRepository(
         var jsonString = JsonSerializer.Serialize(projectJson, serializerOptions);
 
         var jsonNode = JsonNode.Parse(jsonString)!;
-        var jsonWithSchema = PrependSchema(jsonNode, "https://your-domain.com/schemas/mechanic-project.json");
+        var jsonWithSchema = PrependSchema(jsonNode, "https://raw.githubusercontent.com/yak3d/mechanic/refs/heads/main/Mechanic.Core/ProjectFileSchema.json");
 
         await fileService.WriteAllText(projectFilePath, jsonWithSchema.ToJsonString(serializerOptions));
     }

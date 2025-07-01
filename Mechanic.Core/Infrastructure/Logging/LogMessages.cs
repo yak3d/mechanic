@@ -2,6 +2,7 @@ namespace Mechanic.Core.Infrastructure.Logging;
 
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Services.Errors;
 
 public static partial class LogMessages
 {
@@ -43,4 +44,10 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Found steam libraries in {SteamLibraries}")]
     public static partial void FoundSteamLibraries(this ILogger logger, string[] steamLibraries);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "No matching Steam games found.")]
+    public static partial void NoSteamGamesFound(this ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to retrieve steam games due to error: {Error}")]
+    public static partial void SteamGamesDueToError(this ILogger logger, SteamManifestError error);
 }

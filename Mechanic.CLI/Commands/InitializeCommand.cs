@@ -64,14 +64,11 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
                         .UseConverter(game => $"{game.Name} ({game.FullPath})")
                 ).FullPath;
             },
-            Left: games =>
-            {
-                return AnsiConsole.Prompt(
-                    new TextPrompt<string>(
-                        "Enter a project ID in reverse DNS format. [dim]For example: com.example.myproject[/]:"
-                        )
-                    );
-            });
+            Left: _ => AnsiConsole.Prompt(
+                new TextPrompt<string>(
+                    "Enter the path to the root game directory:"
+                )
+            ));
     }
 
     private string PromptForProjectId()

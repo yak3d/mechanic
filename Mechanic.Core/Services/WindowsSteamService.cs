@@ -65,14 +65,25 @@ public class WindowsSteamService(
                     }
                 }
 
-                return Right<SteamManifestError, List<SteamGame>>(
-                    [.. allGames
-                        .OrderBy(g => g.Name)
-                        .Where(game => ValidAppIds.Contains(game.AppId))
+                if (allGames.Count != 0)
+                {
+                    return Right<SteamManifestError, List<SteamGame>>(
+                    [
+                        .. allGames
+                            .OrderBy(g => g.Name)
+                            .Where(game => ValidAppIds.Contains(game.AppId))
                     ]);
+                }
+
+                logger.NoSteamGamesFound();
+                return Left<SteamManifestError, List<SteamGame>>(new SteamManifestError.NoGamesFound());
+
             },
-            Left: error => Task.FromResult(Left<SteamManifestError, List<SteamGame>>(error))
-        );
+            Left: error =>
+            {
+                logger.SteamGamesDueToError(error);
+                return Task.FromResult(Left<SteamManifestError, List<SteamGame>>(error));
+            });
     }
 
     public override string GetSteamInstallPath()
