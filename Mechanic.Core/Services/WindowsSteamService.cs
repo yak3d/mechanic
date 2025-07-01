@@ -14,7 +14,7 @@ public class WindowsSteamService(
     ILogger<WindowsSteamService> logger,
     IRegistryService registryService,
     IFileService fileService)
-    : ISteamService(logger, fileService)
+    : SteamService(logger, fileService)
 {
     private readonly IFileService fileService = fileService;
 
@@ -65,7 +65,11 @@ public class WindowsSteamService(
                     }
                 }
 
-                return Right<SteamManifestError, List<SteamGame>>([.. allGames.OrderBy(g => g.Name)]);
+                return Right<SteamManifestError, List<SteamGame>>(
+                    [.. allGames
+                        .OrderBy(g => g.Name)
+                        .Where(game => ValidAppIds.Contains(game.AppId))
+                    ]);
             },
             Left: error => Task.FromResult(Left<SteamManifestError, List<SteamGame>>(error))
         );

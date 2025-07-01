@@ -10,7 +10,7 @@ using GameName = Mechanic.CLI.Models.GameName;
 namespace Mechanic.CLI.Commands;
 
 [Description("Initializes a project in the current directory. This will create the project file in the current directory with the specified project ID. The project ID must be in reverse DNS format. For example: com.example.myproject.")]
-public class InitializeCommand(IProjectService projectService, ISteamService steamService) : AsyncCommand<InitializeCommand.Settings>
+public class InitializeCommand(IProjectService projectService, SteamService steamService) : AsyncCommand<InitializeCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {

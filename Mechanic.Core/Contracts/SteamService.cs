@@ -10,8 +10,19 @@ using Models.Steam;
 using Services.Errors;
 using static LanguageExt.Prelude;
 
-public abstract class ISteamService(ILogger<ISteamService> logger, IFileService fileService)
+public abstract class SteamService(ILogger<SteamService> logger, IFileService fileService)
 {
+    protected static readonly string[] ValidAppIds =
+    [
+        "22330",  // Oblivion GOTY
+        "900883", // Oblivion GOTY Deluxe
+        "72850",  // Skyrim
+        "489830", // Skyrim Special Edition
+        "22300",  // Fallout 3
+        "22370",  // Fallout 3 GOTY
+        "377160", // Fallout 4
+        "1716740" // Starfield
+    ];
     public abstract Task<Either<SteamManifestError, List<SteamGame>>> GetInstalledGamesAsync();
     public abstract string GetSteamInstallPath();
     protected abstract Task<Either<SteamManifestError, List<string>>> GetLibraryPathsAsync();
