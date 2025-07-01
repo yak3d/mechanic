@@ -12,10 +12,10 @@ public class FileListCommand(IProjectService projectService) : AsyncCommand
     {
         var project = MechanicProject.FromDomain(await projectService.GetCurrentProjectAsync());
 
-        var sourceFileRoot = new Tree("Source Files");
+        var sourceFileRoot = new Tree("[green]Source Files[/]");
         foreach (var sf in project.SourceFiles)
         {
-            var fileNode = new TreeNode(new Text($"{sf.Path}"));
+            var fileNode = new TreeNode(new Text($"{sf.Path} ({sf.Id})"));
 
             await BuildGameFileLinkTree(sf, fileNode);
 
@@ -23,7 +23,7 @@ public class FileListCommand(IProjectService projectService) : AsyncCommand
         }
 
         var gameFiles = project.GameFiles.OrderBy(static f => f.Path).Select(gf => new Text($"{gf.Path} ({gf.Id})"));
-        var gameFilesRoot = new Tree("Game Files");
+        var gameFilesRoot = new Tree("[magenta]Game Files[/]");
         gameFilesRoot.AddNodes(gameFiles);
 
         AnsiConsole.Write(new Rows(

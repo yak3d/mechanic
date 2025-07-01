@@ -2,6 +2,7 @@
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Mechanic.Core.Repositories;
+using Mechanic.Core.Repositories.Exceptions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
@@ -232,6 +233,110 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var result = await _repository.GetCurrentProjectAsync();
 
         result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RemoveSourceFileById_RemovesFileSuccessfully()
+    {
+        var fileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            SourceFiles = [new SourceFile
+            {
+                Id = fileId,
+                Path = "test\\path\\test.tiff",
+                FileType = SourceFileType.Tiff
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveSourceFileByIdAsync(fileId);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(fileId);
+        resultProject.ShouldNotBeNull();
+        resultProject.SourceFiles.Count.ShouldBe(0);
+    }
+    
+    [Fact]
+    public async Task RemoveSourceFileByPath_RemovesFileSuccessfully()
+    {
+        var fileId = Guid.NewGuid();
+        var testPathTestTiff = "test\\path\\test.tiff";
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            SourceFiles = [new SourceFile
+            {
+                Id = fileId,
+                Path = testPathTestTiff,
+                FileType = SourceFileType.Tiff
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveSourceFileByIdAsync(fileId);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(fileId);
+        result.Path.ShouldBe(testPathTestTiff);
+        resultProject.ShouldNotBeNull();
+        resultProject.SourceFiles.Count.ShouldBe(0);
+    }
+    
+    [Fact]
+    public async Task RemoveSourceFileById_WithEmptyProject_ThrowsException()
+    {
+        await Should.ThrowAsync<ProjectNotFoundException>(_repository.RemoveSourceFileByIdAsync(new Guid()));
+    }
+    
+    [Fact]
+    public async Task RemoveSourceFileById_WithFileNotExisting_ThrowsException()
+    {
+        var fileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            SourceFiles = [new SourceFile
+            {
+                Id = fileId,
+                Path = "test\\path\\test.tiff",
+                FileType = SourceFileType.Tiff
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        await Should.ThrowAsync<ProjectSourceFileNotFoundException>(_repository.RemoveSourceFileByIdAsync(new Guid()));
+    }
+    
+    [Fact]
+    public async Task RemoveSourceFileByPath_WithFileNotExisting_ThrowsException()
+    {
+        var fileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            SourceFiles = [new SourceFile
+            {
+                Id = fileId,
+                Path = "test\\path\\test.tiff",
+                FileType = SourceFileType.Tiff
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        await Should.ThrowAsync<ProjectSourceFileNotFoundException>(_repository.RemoveSourceFileByPathAsync("broken path"));
     }
 
     public void Dispose()

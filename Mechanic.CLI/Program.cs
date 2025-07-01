@@ -44,6 +44,15 @@ app.Configure(config =>
             src.AddCommand<FileSrcAddCommand>("add")
                 .WithDescription(
                     "Adds a [b]source[/] file to track by Mechanic. It should exist in your source directory..");
+            src.AddCommand<FileGameDelCommand>("rm")
+                .WithDescription(
+                    "Removes a [b]source[/] file from tracking in Mechanic. Use either `--id` or `--path` to choose the file to remove but not both. Omit both to use interactive mode."
+                )
+                .WithExample(
+                    "file src rm --id 4f947ccf-a191-4dda-8a12-a5b1c536dba6"
+                ).WithExample(
+                    @"file src rm --path textures\project\metal01.tiff"
+                );
         });
         file.AddBranch("game", game =>
         {

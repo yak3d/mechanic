@@ -3,6 +3,7 @@ namespace Mechanic.Core.Repositories;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Contracts;
+using Exceptions;
 using Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
 using Models;
@@ -66,6 +67,50 @@ public class JsonProjectRepository(
         return project?.GameFiles.FirstOrDefault(x => x.Id == id);
     }
 
+    public async Task<SourceFile> RemoveSourceFileByIdAsync(Guid id)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        if (project == null)
+        {
+            throw new ProjectNotFoundException();
+        }
+
+        var fileToRemove = project.SourceFiles.FirstOrDefault(x => x.Id == id);
+
+        if (fileToRemove == null)
+        {
+            throw new ProjectSourceFileNotFoundException(new IdIdentifier(id));
+        }
+
+        project.SourceFiles.Remove(fileToRemove);
+        await this.SaveCurrentProjectAsync(project);
+
+        return fileToRemove;
+    }
+
+    public async Task<SourceFile> RemoveSourceFileByPathAsync(string path)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        if (project == null)
+        {
+            throw new ProjectNotFoundException();
+        }
+
+        var fileToRemove = project.SourceFiles.FirstOrDefault(x => x.Path == path);
+
+        if (fileToRemove == null)
+        {
+            throw new ProjectSourceFileNotFoundException(new PathIdentifier(path));
+        }
+
+        project.SourceFiles.Remove(fileToRemove);
+        await this.SaveCurrentProjectAsync(project);
+
+        return fileToRemove;
+    }
+
     private static JsonObject PrependSchema(JsonNode jsonNode, string schemaUrl)
     {
         var originalObject = jsonNode.AsObject();
@@ -82,3 +127,5 @@ public class JsonProjectRepository(
         return newJsonObject;
     }
 }
+
+public class ProjectNotFoundException : Exception;
