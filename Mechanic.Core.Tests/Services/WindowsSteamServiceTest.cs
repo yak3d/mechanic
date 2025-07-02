@@ -96,7 +96,7 @@ public class WindowsSteamServiceTest : IDisposable
         var steamAppsPath = Path.Combine(steamPath, "steamapps");
 
         var libraryContent = VdfTestUtils.BuildSimpleLibraryFolder(steamPath);
-        var manifestContent = VdfTestUtils.BuildFullAppState("12345", "Test Game", "testgame");
+        var manifestContent = VdfTestUtils.BuildFullAppState("22330", "Test Game", "testgame");
 
         var manifestFile = Path.Combine(steamAppsPath, "appmanifest_12345.acf");
 
@@ -119,7 +119,7 @@ public class WindowsSteamServiceTest : IDisposable
         result.IfRight(games =>
         {
             games.Count.ShouldBe(1);
-            games[0].AppId.ShouldBe("12345");
+            games[0].AppId.ShouldBe("22330");
             games[0].Name.ShouldBe("Test Game");
             games[0].InstallDir.ShouldBe("testgame");
         });
@@ -147,9 +147,9 @@ public class WindowsSteamServiceTest : IDisposable
                      """""; ;
 
         var manifestFile1 = Path.Combine(steamAppsPath1, "appmanifest_12345.acf");
-        var manifestFileContents1 = VdfTestUtils.BuildFullAppState("12345", "Game One", "testgame");
+        var manifestFileContents1 = VdfTestUtils.BuildFullAppState("22330", "Game One", "testgame");
         var manifestFile2 = Path.Combine(steamAppsPath2, "appmanifest_54321.acf");
-        var manifestFileContents2 = VdfTestUtils.BuildFullAppState("54321", "Game Two", "testgame");
+        var manifestFileContents2 = VdfTestUtils.BuildFullAppState("72850", "Game Two", "testgame");
 
         var libraryFoldersPath = Path.Combine(steamPath1, "steamapps", "libraryfolders.vdf");
         File.WriteAllText(libraryFoldersPath, libraryFoldersContent);

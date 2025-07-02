@@ -1,11 +1,13 @@
 namespace Mechanic.Core.Services.Errors;
 
-public class SourceFileAddError : ProjectError;
+public record SourceFileAddError : ProjectError;
 
-public class LinkedFileDoesNotExistError : SourceFileAddError
+public record LinkedFileDoesNotExistError : SourceFileAddError
 {
     public Guid LinkedFileId { get; init; }
 }
 
-public class SourceFileDoesNotExistAtPathError(string path) : ProjectError;
-public class SourceFileDoesNotExistWithIdError(Guid id) : ProjectError;
+public record SourceFileDoesNotExistAtPathError(string Path) : ProjectError;
+public record SourceFileDoesNotExistWithIdError(Guid Id) : ProjectError;
+public record GameFileDoesNotExistAtPathError(string Path) : ProjectError;
+public record GameFileDoesNotExistWithIdError(Guid Id) : ProjectError;

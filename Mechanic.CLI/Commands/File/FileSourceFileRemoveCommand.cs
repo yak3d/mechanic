@@ -8,7 +8,7 @@ using Spectre.Console.Cli;
 
 namespace Mechanic.CLI.Commands.File;
 
-public class FileGameDelCommand(IProjectService projectService, ILogger<FileGameDelCommand> logger) : AsyncCommand<FileGameDelCommand.Settings>
+public class FileSourceFileRemoveCommand(IProjectService projectService, ILogger<FileSourceFileRemoveCommand> logger) : AsyncCommand<FileSourceFileRemoveCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -41,9 +41,9 @@ public class FileGameDelCommand(IProjectService projectService, ILogger<FileGame
                     logger.SourceFileRemovedFromProjectByPath(file.Path);
                     return 0;
                 },
-                Left: _ =>
+                Left: error =>
                 {
-                    logger.SourceFileNotFoundByPathWhenRemoving(settings.Path);
+                    logger.SourceFileNotFoundByPathWhenRemoving(error.Path);
                     return -1;
                 });
         }

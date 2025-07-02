@@ -88,6 +88,30 @@ public class ProjectService(
         }
     }
 
+    public async Task<Either<GameFileDoesNotExistAtPathError, GameFile>> RemoveGameFileByPathAsync(string path)
+    {
+        try
+        {
+            return await projectRepository.RemoveGameFileByPathAsync(path);
+        }
+        catch (ProjectSourceFileNotFoundException)
+        {
+            return new GameFileDoesNotExistAtPathError(path);
+        }
+    }
+
+    public async Task<Either<GameFileDoesNotExistWithIdError, GameFile>> RemoveGameFileByIdAsync(Guid id)
+    {
+        try
+        {
+            return await projectRepository.RemoveGameFileByIdAsync(id);
+        }
+        catch (ProjectGameFileNotFoundException)
+        {
+            return new GameFileDoesNotExistWithIdError(id);
+        }
+    }
+
     public async Task<GameFile> AddGameFileAsync(string path, GameFileType fileType)
     {
         var project = await this.GetCurrentProjectAsync();

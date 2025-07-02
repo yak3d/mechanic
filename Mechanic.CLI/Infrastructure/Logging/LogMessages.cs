@@ -34,4 +34,16 @@ public static partial class LogMessages
     
     [LoggerMessage(Level = LogLevel.Error, Message = "Source file with id {Id} could not be found in the project.")]
     public static partial void SourceFileNotFoundByIdWhenRemoving(this ILogger logger, Guid id);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Game file at path {GameFilePath} removed from the project successfully. Note: It was not removed from the file system.")]
+    public static partial void GameFileRemovedFromProjectByPath(this ILogger logger, string gameFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Game file at path {GameFilePath} could not be found in the project.")]
+    public static partial void GameFileNotFoundByPathWhenRemoving(this ILogger logger, string gameFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Game file with id {Id} removed from the project successfully. [bold]Note:[/] It was not removed from the file system.")]
+    public static partial void GameFileRemovedFromProjectById(this ILogger logger, Guid id);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Game file with id {Id} could not be found in the project.")]
+    public static partial void GameFileNotFoundByIdWhenRemoving(this ILogger logger, Guid id);
 }

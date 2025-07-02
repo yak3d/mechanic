@@ -50,4 +50,7 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to retrieve steam games due to error: {Error}")]
     public static partial void SteamGamesDueToError(this ILogger logger, SteamManifestError error);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Unlinking game file {GameFilePath} ({GameFileId}) from source file {SourceFilePath} ({SourceFileId}) since the game file is being removed from tracking.")]
+    public static partial void UnlinkingGameFile(this ILogger logger, string gameFilePath, Guid gameFileId, string sourceFilePath, Guid sourceFileId);
 }

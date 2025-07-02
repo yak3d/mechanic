@@ -14,6 +14,8 @@ public interface IProjectService
         Guid? id);
     public Task<Either<SourceFileDoesNotExistAtPathError, SourceFile>> RemoveSourceFileByPathAsync(string path);
     public Task<Either<SourceFileDoesNotExistWithIdError, SourceFile>> RemoveSourceFileByIdAsync(Guid id);
+    public Task<Either<GameFileDoesNotExistAtPathError, GameFile>> RemoveGameFileByPathAsync(string path);
+    public Task<Either<GameFileDoesNotExistWithIdError, GameFile>> RemoveGameFileByIdAsync(Guid id);
     public Task<GameFile> AddGameFileAsync(string path, GameFileType fileType);
     public Task<GameFile?> FindGameFileByIdAsync(Guid id);
     public Task<bool> SourceFileExistsWithPath(string path);

@@ -338,6 +338,270 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         await _repository.SaveCurrentProjectAsync(project);
         await Should.ThrowAsync<ProjectSourceFileNotFoundException>(_repository.RemoveSourceFileByPathAsync("broken path"));
     }
+    
+    [Fact]
+    public async Task RemoveGameFileById_RemovesFileSuccessfully()
+    {
+        var gameFileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = "test\\path\\test.dds",
+                GameFileType = GameFileType.DirectDrawSurface
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameFileId);
+        resultProject.ShouldNotBeNull();
+        resultProject.GameFiles.Count.ShouldBe(0);
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileByPath_RemovesFileSuccessfully()
+    {
+        var gameFileId = Guid.NewGuid();
+        var testPathTestDds = "test\\path\\test.dds";
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = testPathTestDds,
+                GameFileType = GameFileType.DirectDrawSurface
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveGameFileByPathAsync(testPathTestDds);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameFileId);
+        result.Path.ShouldBe(testPathTestDds);
+        resultProject.ShouldNotBeNull();
+        resultProject.GameFiles.Count.ShouldBe(0);
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileById_RemovesLinkedSourceFiles()
+    {
+        var gameFileId = Guid.NewGuid();
+        var sourceFileId = Guid.NewGuid();
+        var unlinkedSourceFileId = Guid.NewGuid();
+        
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = "test\\textures\\armor.dds",
+                GameFileType = GameFileType.DirectDrawSurface
+            }],
+            SourceFiles = [
+                new SourceFile
+                {
+                    Id = sourceFileId,
+                    Path = "source\\textures\\armor.tiff",
+                    FileType = SourceFileType.Tiff,
+                    GameFileLinks = [gameFileId]
+                },
+                new SourceFile
+                {
+                    Id = unlinkedSourceFileId,
+                    Path = "source\\models\\weapon.fbx",
+                    FileType = SourceFileType.Fbx,
+                    GameFileLinks = []
+                }
+            ]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameFileId);
+        resultProject.ShouldNotBeNull();
+        resultProject.GameFiles.Count.ShouldBe(0);
+        resultProject.SourceFiles.Count.ShouldBe(1);
+        resultProject.SourceFiles[0].Id.ShouldBe(unlinkedSourceFileId);
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileByPath_RemovesLinkedSourceFiles()
+    {
+        var gameFileId = Guid.NewGuid();
+        var sourceFileId = Guid.NewGuid();
+        var unlinkedSourceFileId = Guid.NewGuid();
+        var gameFilePath = "test\\audio\\music.wem";
+        
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = gameFilePath,
+                GameFileType = GameFileType.WwiseEncodedMedia
+            }],
+            SourceFiles = [
+                new SourceFile
+                {
+                    Id = sourceFileId,
+                    Path = "source\\audio\\music.wav",
+                    FileType = SourceFileType.Wav,
+                    GameFileLinks = [gameFileId]
+                },
+                new SourceFile
+                {
+                    Id = unlinkedSourceFileId,
+                    Path = "source\\scripts\\dialogue.psc",
+                    FileType = SourceFileType.Psc,
+                    GameFileLinks = []
+                }
+            ]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveGameFileByPathAsync(gameFilePath);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameFileId);
+        result.Path.ShouldBe(gameFilePath);
+        resultProject.ShouldNotBeNull();
+        resultProject.GameFiles.Count.ShouldBe(0);
+        resultProject.SourceFiles.Count.ShouldBe(1);
+        resultProject.SourceFiles[0].Id.ShouldBe(unlinkedSourceFileId);
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileById_RemovesMultipleLinkedSourceFiles()
+    {
+        var gameFileId = Guid.NewGuid();
+        var sourceFileId1 = Guid.NewGuid();
+        var sourceFileId2 = Guid.NewGuid();
+        var sourceFileId3 = Guid.NewGuid();
+        
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = "test\\materials\\metal.mat",
+                GameFileType = GameFileType.Material
+            }],
+            SourceFiles = [
+                new SourceFile
+                {
+                    Id = sourceFileId1,
+                    Path = "source\\diffuse.tiff",
+                    FileType = SourceFileType.Tiff,
+                    GameFileLinks = [gameFileId]
+                },
+                new SourceFile
+                {
+                    Id = sourceFileId2,
+                    Path = "source\\normal.tiff",
+                    FileType = SourceFileType.Tiff,
+                    GameFileLinks = [gameFileId]
+                },
+                new SourceFile
+                {
+                    Id = sourceFileId3,
+                    Path = "source\\independent.blend",
+                    FileType = SourceFileType.Blend,
+                    GameFileLinks = []
+                }
+            ]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
+        var resultProject = await _repository.GetCurrentProjectAsync();
+        
+        result.ShouldNotBeNull();
+        result.Id.ShouldBe(gameFileId);
+        resultProject.ShouldNotBeNull();
+        resultProject.GameFiles.Count.ShouldBe(0);
+        resultProject.SourceFiles.Count.ShouldBe(1);
+        resultProject.SourceFiles[0].Id.ShouldBe(sourceFileId3);
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileById_WithEmptyProject_ThrowsException()
+    {
+        await Should.ThrowAsync<ProjectNotFoundException>(_repository.RemoveGameFileByIdAsync(new Guid()));
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileById_WithFileNotExisting_ThrowsException()
+    {
+        var gameFileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = "test\\path\\test.dds",
+                GameFileType = GameFileType.DirectDrawSurface
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        await Should.ThrowAsync<ProjectGameFileNotFoundException>(_repository.RemoveGameFileByIdAsync(new Guid()));
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileByPath_WithFileNotExisting_ThrowsException()
+    {
+        var gameFileId = Guid.NewGuid();
+        var project = new MechanicProject
+        {
+            Id = "integration-test-project",
+            GameName = GameName.Tes4Oblivion,
+            GamePath = TestGamePath,
+            GameFiles = [new GameFile
+            {
+                Id = gameFileId,
+                Path = "test\\path\\test.dds",
+                GameFileType = GameFileType.DirectDrawSurface
+            }]
+        };
+        
+        await _repository.SaveCurrentProjectAsync(project);
+        await Should.ThrowAsync<ProjectGameFileNotFoundException>(_repository.RemoveGameFileByPathAsync("nonexistent\\path"));
+    }
+    
+    [Fact]
+    public async Task RemoveGameFileByPath_WithEmptyProject_ThrowsException()
+    {
+        await Should.ThrowAsync<ProjectNotFoundException>(_repository.RemoveGameFileByPathAsync("any\\path"));
+    }
 
     public void Dispose()
     {

@@ -44,7 +44,7 @@ app.Configure(config =>
             src.AddCommand<FileSrcAddCommand>("add")
                 .WithDescription(
                     "Adds a [b]source[/] file to track by Mechanic. It should exist in your source directory..");
-            src.AddCommand<FileGameDelCommand>("rm")
+            src.AddCommand<FileSourceFileRemoveCommand>("rm")
                 .WithDescription(
                     "Removes a [b]source[/] file from tracking in Mechanic. Use either `--id` or `--path` to choose the file to remove but not both. Omit both to use interactive mode."
                 )
@@ -59,6 +59,13 @@ app.Configure(config =>
             game.SetDescription("Allows you to add, list, remove [b]game[/] files tracked by Mechanic.");
             game.AddCommand<FileGameAddCommand>("add")
                 .WithDescription("Adds a [b]game[/] file to track by Mechanic.");
+            game.AddCommand<FileGameFileRemoveCommand>("rm")
+                .WithDescription("Removes a [b]game[/] file from tracking in Mechanic. Use either `--id` or `--path` to choose the file to remove but not both. Omit both to use interactive mode.")
+                .WithExample(
+                    "file game rm --id 4f947ccf-a191-4dda-8a12-a5b1c536dba6"
+                ).WithExample(
+                    @"file game rm --path textures\project\metal01.dds"
+                );
         });
     });
 });

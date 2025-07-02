@@ -111,6 +111,64 @@ public class JsonProjectRepository(
         return fileToRemove;
     }
 
+    public async Task<GameFile> RemoveGameFileByIdAsync(Guid id)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        if (project == null)
+        {
+            throw new ProjectNotFoundException();
+        }
+
+        var fileToRemove = project.GameFiles.FirstOrDefault(x => x.Id == id);
+
+        if (fileToRemove == null)
+        {
+            throw new ProjectGameFileNotFoundException(new IdIdentifier(id));
+        }
+
+        project.GameFiles.Remove(fileToRemove);
+        project.SourceFiles
+            .Where(sf => sf.GameFileLinks.Contains(fileToRemove.Id))
+            .ToList()
+            .ForEach(sf =>
+            {
+                logger.UnlinkingGameFile(fileToRemove.Path, fileToRemove.Id, sf.Path, sf.Id);
+                project.SourceFiles.Remove(sf);
+            });
+
+        await this.SaveCurrentProjectAsync(project);
+
+        return fileToRemove;
+    }
+
+    public async Task<GameFile> RemoveGameFileByPathAsync(string path)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        if (project == null)
+        {
+            throw new ProjectNotFoundException();
+        }
+
+        var fileToRemove = project.GameFiles.FirstOrDefault(x => x.Path == path);
+
+        if (fileToRemove == null)
+        {
+            throw new ProjectGameFileNotFoundException(new PathIdentifier(path));
+        }
+
+        project.GameFiles.Remove(fileToRemove);
+        project.SourceFiles
+            .Where(sf => sf.GameFileLinks.Contains(fileToRemove.Id))
+            .ToList()
+            .ForEach(sf => project.SourceFiles.Remove(sf));
+
+        await this.SaveCurrentProjectAsync(project);
+
+        return fileToRemove;
+    }
+
     private static JsonObject PrependSchema(JsonNode jsonNode, string schemaUrl)
     {
         var originalObject = jsonNode.AsObject();
