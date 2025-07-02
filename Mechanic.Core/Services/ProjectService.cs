@@ -6,6 +6,7 @@ using LanguageExt;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Microsoft.Extensions.Logging;
+using Repositories.Exceptions;
 using static LanguageExt.Prelude;
 
 public class ProjectService(
@@ -61,6 +62,30 @@ public class ProjectService(
         await projectRepository.SaveCurrentProjectAsync(project);
 
         return sourceFile;
+    }
+
+    public async Task<Either<SourceFileDoesNotExistAtPathError, SourceFile>> RemoveSourceFileByPathAsync(string path)
+    {
+        try
+        {
+            return await projectRepository.RemoveSourceFileByPathAsync(path);
+        }
+        catch (ProjectSourceFileNotFoundException)
+        {
+            return new SourceFileDoesNotExistAtPathError(path);
+        }
+    }
+
+    public async Task<Either<SourceFileDoesNotExistWithIdError, SourceFile>> RemoveSourceFileByIdAsync(Guid id)
+    {
+        try
+        {
+            return await projectRepository.RemoveSourceFileByIdAsync(id);
+        }
+        catch (ProjectSourceFileNotFoundException)
+        {
+            return new SourceFileDoesNotExistWithIdError(id);
+        }
     }
 
     public async Task<GameFile> AddGameFileAsync(string path, GameFileType fileType)

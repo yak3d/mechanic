@@ -22,4 +22,16 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Source file with path {SourceFilePath} already exists.")]
     public static partial void SourceFileAlreadyExists(this ILogger logger, string sourceFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Source file at path {SourceFilePath} removed from the project successfully. Note: It was not removed from the file system.")]
+    public static partial void SourceFileRemovedFromProjectByPath(this ILogger logger, string sourceFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Source file at path {SourceFilePath} could not be found in the project.")]
+    public static partial void SourceFileNotFoundByPathWhenRemoving(this ILogger logger, string sourceFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Source file with id {Id} removed from the project successfully. [bold]Note:[/] It was not removed from the file system.")]
+    public static partial void SourceFileRemovedFromProjectById(this ILogger logger, Guid id);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Source file with id {Id} could not be found in the project.")]
+    public static partial void SourceFileNotFoundByIdWhenRemoving(this ILogger logger, Guid id);
 }

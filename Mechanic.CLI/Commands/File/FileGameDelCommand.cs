@@ -1,10 +1,14 @@
 ﻿using System.ComponentModel;
+using Mechanic.CLI.Infrastructure.Logging;
+using Mechanic.CLI.Models;
+using Mechanic.Core.Contracts;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace Mechanic.CLI.Commands.File;
 
-public class FileGameDelCommand : AsyncCommand<FileGameDelCommand.Settings>
+public class FileGameDelCommand(IProjectService projectService, ILogger<FileGameDelCommand> logger) : AsyncCommand<FileGameDelCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -26,8 +30,57 @@ public class FileGameDelCommand : AsyncCommand<FileGameDelCommand.Settings>
             : ValidationResult.Success();
     }
 
-    public override Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        return Task.FromResult(0);
+        if (settings.Path != null)
+        {
+            var removedFile = await projectService.RemoveSourceFileByPathAsync(settings.Path);
+            return removedFile.Match(
+                Right: file =>
+                {
+                    logger.SourceFileRemovedFromProjectByPath(file.Path);
+                    return 0;
+                },
+                Left: _ =>
+                {
+                    logger.SourceFileNotFoundByPathWhenRemoving(settings.Path);
+                    return -1;
+                });
+        }
+
+        if (settings.Id != null)
+        {
+            var id = Guid.Parse(settings.Id);
+            var removedFile = await projectService.RemoveSourceFileByIdAsync(id);
+            return removedFile.Match(
+                Right: file =>
+                {
+                    logger.SourceFileRemovedFromProjectById(file.Id);
+                    return 0;
+                },
+                Left: _ =>
+                {
+                    logger.SourceFileNotFoundByIdWhenRemoving(id);
+                    return -2;
+                });
+        }
+
+        var chosenFile = await FilePrompts.PromptForSourceFile("Pick a source file to remove", "Source files", projectService);
+        if (chosenFile == null) return 1;
+        {
+            var removedFile = await projectService.RemoveSourceFileByIdAsync(chosenFile.Id);
+            return removedFile.Match(
+                Right: file =>
+                {
+                    logger.SourceFileRemovedFromProjectById(file.Id);
+                    return 0;
+                },
+                Left: _ =>
+                {
+                    logger.SourceFileNotFoundByIdWhenRemoving(chosenFile.Id);
+                    return -3;
+                }
+            );
+        }
     }
 }

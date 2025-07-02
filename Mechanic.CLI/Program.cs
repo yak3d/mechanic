@@ -1,6 +1,7 @@
 ﻿using Mechanic.CLI.Application;
 using Mechanic.CLI.Commands;
 using Mechanic.CLI.Commands.File;
+using Mechanic.CLI.Infrastructure.Logging;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Repositories;
 using Mechanic.Core.Services;
@@ -12,9 +13,9 @@ using Spectre.Console.Cli;
 var registrations = new ServiceCollection();
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.Console(
-        outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}",
-        theme: AnsiConsoleTheme.Code)
+    .WriteTo.SpectreConsole(
+        outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}"
+    )
     .CreateLogger();
 
 registrations.AddLogging(builder => builder.AddSerilog());
@@ -30,7 +31,6 @@ registrations.AddSingleton<SteamService, WindowsSteamService>();
 var registrar = new TypeRegistrar(registrations);
 
 var app = new CommandApp(registrar);
-
 app.Configure(config =>
 {
     config.AddCommand<InitializeCommand>("init");
