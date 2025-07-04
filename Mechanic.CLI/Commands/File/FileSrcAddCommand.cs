@@ -2,6 +2,7 @@
 using FuzzySharp;
 using Mechanic.CLI.Infrastructure.Logging;
 using Mechanic.CLI.Models;
+using Mechanic.CLI.Utils;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Mechanic.Core.Services;
@@ -35,7 +36,6 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
     }
 
     private record PromptFileChoiceHeader() : PromptChoice("Game Files");
-    private record PromptFileChoice(GameFile GameFile) : PromptChoice($"{GameFile.Path} ({GameFile.Id})");
 
     private record ActionsChoiceHeader() : PromptChoice("If none match:");
     private record CancelChoice() : PromptChoice("Cancel");
@@ -48,7 +48,7 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
             ? AssumeFileType(Path.GetExtension(settings.SourcePath))
             : Enum.Parse<SourceFileType>(settings.Type);
 
-        if (await projectService.SourceFileExistsWithPath(settings.SourcePath))
+        if (await projectService.SourceFileExistsWithPathAsync(settings.SourcePath))
         {
             logger.SourceFileAlreadyExists(settings.SourcePath);
             return -3;
@@ -60,14 +60,12 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
             var similarGameFiles = (await FindSimilarGameFile(settings.SourcePath)).ToList();
             if (similarGameFiles.Count != 0)
             {
-                var gameFileChoices = similarGameFiles.Select(gf => gf.Id.ToString()).ToList();
-
-                var choice = PromptForPossibleGameFiles(settings, gameFileChoices, similarGameFiles);
+                var choice = PromptForPossibleGameFiles(settings, similarGameFiles);
 
                 selectedGameFile = choice switch
                 {
-                    AllPromptsChoice => ((PromptFileChoice)await PromptForAllGameFiles()).GameFile,
-                    PromptFileChoice gameFileChoice => gameFileChoice.GameFile,
+                    AllPromptsChoice => ((FilePrompts.ProjectFileChoice) await PromptForAllGameFiles()).File as GameFile,
+                    FilePrompts.ProjectFileChoice gameFileChoice => gameFileChoice.File as GameFile,
                     _ => selectedGameFile
                 };
             }
@@ -115,40 +113,22 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
             });
     }
 
-    private PromptChoice PromptForPossibleGameFiles(Settings settings, List<string> gameFileChoices, List<GameFile> similarGameFiles)
+    private PromptChoice PromptForPossibleGameFiles(Settings settings, List<GameFile> similarGameFiles)
     {
-        var chosenGameFileId = AnsiConsole.Prompt(
-            new SelectionPrompt<PromptChoice>()
-                .Title(
-                    $"Found existing [purple]game files[/] that may match this [green]source file[/]: {settings.SourcePath}")
-                .PageSize(10)
-                .MoreChoicesText("[grey](More)[/]")
-                .AddChoiceGroup(new PromptFileChoiceHeader(), similarGameFiles.Select(gf => new PromptFileChoice(gf)))
-                .AddChoiceGroup(new ActionsChoiceHeader(), new CancelChoice(), new AllPromptsChoice())
-                .UseConverter(id =>
-                {
-                    if (id is AllPromptsChoice)
-                    {
-                        return id.ToString();
-                    }
-                    if (id is CancelChoice) return id.ToString();
-                    return id.ToString();
-                })
+        var chosenGame = FilePrompts.PromptForGameFileAsPromptChoice(
+            $"Found existing [purple]game files[/] that may match this [green]source file[/]: {settings.SourcePath}",
+            "Source Files",
+            similarGameFiles,
+            new AllPromptsChoice()
         );
 
-        return chosenGameFileId;
+        return chosenGame;
     }
 
     private async Task<PromptChoice> PromptForAllGameFiles()
     {
         var allGameFiles = Models.MechanicProject.FromDomain(await projectService.GetCurrentProjectAsync()).GameFiles;
-        return AnsiConsole.Prompt(
-            new SelectionPrompt<PromptChoice>()
-                .Title("All game files")
-                .PageSize(10)
-                .MoreChoicesText("[grey](More)[/]")
-                .AddChoiceGroup(new PromptFileChoiceHeader(), allGameFiles.OrderByDescending(gf => gf.Path).Select(gf => new PromptFileChoice(gf)))
-            );
+        return FilePrompts.PromptForGameFileAsPromptChoice("All game files", "Game Files", allGameFiles);
     }
 
     public override ValidationResult Validate(CommandContext context, Settings settings)
@@ -160,20 +140,12 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
 
     private async Task<IEnumerable<GameFile>> FindSimilarGameFile(string sourceFilePath)
     {
-        var gameFiles = (await projectService.GetCurrentProjectAsync()).GameFiles;
+        var gameFiles = (await projectService.GetCurrentProjectAsync()).GameFiles.Select(GameFile.FromDomain);
         var sourceFile = Path.GetFileNameWithoutExtension(sourceFilePath);
+        var bestMatches = ProjectFileFuzzyMatcher.FuzzyMatch(gameFiles, sourceFile)
+            .Select(file => file.File);
 
-        var bestMatch = gameFiles
-            .Select(gf => new
-            {
-                GameFile = gf,
-                Score = Fuzz.Ratio(sourceFile, Path.GetFileNameWithoutExtension(gf.Path))
-            })
-            .Where(match => match.Score >= 70)
-            .OrderByDescending(match => match.Score)
-            .Select(file => GameFile.FromDomain(file.GameFile));
-
-        return bestMatch;
+        return bestMatches;
     }
 
     private static SourceFileType AssumeFileType(string fileExtension) => fileExtension switch

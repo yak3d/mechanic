@@ -58,6 +58,14 @@ public class MechanicProject
         return gameFile;
     }
 
+    public GameFile AddGameFile(string path, GameFileType fileType, Guid sourceFileId)
+    {
+        var gameFile = this.AddGameFile(path, fileType);
+        this.SourceFiles.Where(sf => sf.Id == sourceFileId).ToList().ForEach(sf => sf.GameFileLinks.Add(gameFile.Id));
+
+        return gameFile;
+    }
+
     public void ChangeGame(GameName newGameName) => this.gameName = newGameName;
 
     public Project.Models.Json.MechanicProject ToJson() => new()

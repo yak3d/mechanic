@@ -65,7 +65,8 @@ public class FileSourceFileRemoveCommand(IProjectService projectService, ILogger
                 });
         }
 
-        var chosenFile = await FilePrompts.PromptForSourceFile("Pick a source file to remove", "Source files", projectService);
+        var sourceFiles = (await projectService.GetCurrentProjectAsync()).SourceFiles.Select(SourceFile.FromDomain);
+        var chosenFile = FilePrompts.PromptForSourceFile("Pick a source file to remove", "Source files", sourceFiles);
         if (chosenFile == null) return 1;
         {
             var removedFile = await projectService.RemoveSourceFileByIdAsync(chosenFile.Id);

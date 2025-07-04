@@ -46,4 +46,13 @@ public static partial class LogMessages
     
     [LoggerMessage(Level = LogLevel.Error, Message = "Game file with id {Id} could not be found in the project.")]
     public static partial void GameFileNotFoundByIdWhenRemoving(this ILogger logger, Guid id);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Game file with path {GameFilePath} already exists.")]
+    public static partial void GameFileAlreadyExists(this ILogger logger, string gameFilePath);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Added game file with path {GameFilePath} with id {GameFileId}.")]
+    public static partial void AddedGameFileWithId(this ILogger logger, string gameFilePath, Guid gameFileId);
+    
+    [LoggerMessage(Level = LogLevel.Information, Message = "Added game file {GameFilePath} with id {GameFileId} and linked it to source file {SourceFilePath} ({SourceFileId})")]
+    public static partial void AddedGameFileWithLink(this ILogger logger, string gameFilePath, Guid gameFileId, string sourceFilePath, Guid sourceFileId);
 }

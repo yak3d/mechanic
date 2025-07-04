@@ -112,7 +112,7 @@ public class ProjectService(
         }
     }
 
-    public async Task<GameFile> AddGameFileAsync(string path, GameFileType fileType)
+    public async Task<Either<GameFileError, GameFile>> AddGameFileAsync(string path, GameFileType fileType)
     {
         var project = await this.GetCurrentProjectAsync();
         var gameFile = project.AddGameFile(path, fileType);
@@ -121,13 +121,41 @@ public class ProjectService(
         return gameFile;
     }
 
+    public async Task<Either<ProjectError, GameFile>> AddGameFileAsync(string path, GameFileType fileType, Guid? sourceFileId)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        var gameFile = sourceFileId != null
+            ? project.AddGameFile(path, fileType, sourceFileId.Value)
+            : project.AddGameFile(path, fileType);
+
+        await projectRepository.SaveCurrentProjectAsync(project);
+        return gameFile;
+    }
+
+    public async Task LinkGameFileToSourceFileAsync(Guid gameFileId, Guid sourceFileId)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        project.SourceFiles.Where(f => f.Id == sourceFileId).ToList().ForEach(f => f.GameFileLinks.Add(gameFileId));
+        await projectRepository.SaveCurrentProjectAsync(project);
+    }
+
     public async Task<GameFile?> FindGameFileByIdAsync(Guid id) => await projectRepository.FindGameFileByIdAsync(id);
-    public async Task<bool> SourceFileExistsWithPath(string path) => await projectRepository.GetCurrentProjectAsync()
+    public async Task<SourceFile?> FindSourceFileByIdAsync(Guid id) => await projectRepository.FindSourceFileByIdAsync(id);
+    public async Task<bool> SourceFileExistsWithPathAsync(string path) => await projectRepository.GetCurrentProjectAsync()
         .ContinueWith(project =>
         {
             var projectResult = project.Result;
 
             return projectResult != null && Enumerable.Any(projectResult.SourceFiles, sourceFile => sourceFile.Path == path);
+        });
+
+    public async Task<bool> GameFileExistsWithPathAsync(string path) => await projectRepository.GetCurrentProjectAsync()
+        .ContinueWith(project =>
+        {
+            var projectResult = project.Result;
+
+            return projectResult != null && Enumerable.Any(projectResult.GameFiles, gameFile => gameFile.Path == path);
         });
 }
 

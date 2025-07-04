@@ -67,6 +67,12 @@ public class JsonProjectRepository(
         return project?.GameFiles.FirstOrDefault(x => x.Id == id);
     }
 
+    public async Task<SourceFile?> FindSourceFileByIdAsync(Guid id)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        return project?.SourceFiles.FirstOrDefault(x => x.Id == id);
+    }
+
     public async Task<SourceFile> RemoveSourceFileByIdAsync(Guid id)
     {
         var project = await this.GetCurrentProjectAsync();

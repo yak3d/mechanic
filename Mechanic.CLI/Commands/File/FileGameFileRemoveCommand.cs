@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Mechanic.CLI.Infrastructure.Logging;
+using Mechanic.CLI.Models;
 using Mechanic.Core.Contracts;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -62,7 +63,8 @@ public class FileGameFileRemoveCommand(IProjectService projectService, ILogger<F
                 });
         }
 
-        var chosenFile = await FilePrompts.PromptForGameFile("Pick a source file to remove", "Source files", projectService);
+        var filesToChoose = (await projectService.GetCurrentProjectAsync()).GameFiles.Select(GameFile.FromDomain);
+        var chosenFile = FilePrompts.PromptForGameFile("Pick a source file to remove", "Source files", filesToChoose);
         if (chosenFile == null) return 1;
         {
             var removedFile = await projectService.RemoveGameFileByIdAsync(chosenFile.Id);
