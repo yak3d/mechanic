@@ -7,6 +7,9 @@ public static partial class LogMessages
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "Assuming game file type is {GameFileType} based on the extension {Extension}")]
     public static partial void AssumingGameFileType(this ILogger logger, GameFileType gameFileType, string extension);
+    
+    [LoggerMessage(Level = LogLevel.Warning, Message = "File type was set to Other, this may cause issues. If you think this was done incorrectly, check the file extension or set the type with the --type argument")]
+    public static partial void FileTypeSetToOther(this ILogger logger);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Added source file {SourceFilePath} with id {SourceFileId}")]
     public static partial void AddedSourceFile(this ILogger logger, string sourceFilePath, Guid sourceFileId);

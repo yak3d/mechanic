@@ -133,6 +133,11 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
         };
 
         logger.AssumingGameFileType(gameFileType, Path.GetExtension(file));
+        
+        if (gameFileType == GameFileType.Other)
+        {
+            logger.FileTypeSetToOther();
+        }
 
         return gameFileType;
     }
