@@ -58,4 +58,10 @@ public static partial class LogMessages
     
     [LoggerMessage(Level = LogLevel.Information, Message = "Added game file {GameFilePath} with id {GameFileId} and linked it to source file {SourceFilePath} ({SourceFileId})")]
     public static partial void AddedGameFileWithLink(this ILogger logger, string gameFilePath, Guid gameFileId, string sourceFilePath, Guid sourceFileId);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to create directory for settings with exception")]
+    public static partial void FailedToCreateDirectoryWithException(this ILogger logger, Exception exception);
+    
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to write to settings file at path {SettingsPath} with exception")]
+    public static partial void FailedToWriteToSettingsFile(this ILogger logger, string settingsPath, Exception exception);
 }
