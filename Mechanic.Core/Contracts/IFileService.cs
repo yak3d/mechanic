@@ -7,4 +7,5 @@ public interface IFileService
     public Task<string[]> GetFilesFromDirectoryAsync(string path, string searchPattern);
     public Task<bool> DirectoryExists(string path);
     public Task CreateDirectoryAsync(string path);
+    public Task<bool> FileExists(string path);
 }

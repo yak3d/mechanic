@@ -1,4 +1,5 @@
 ﻿using Mechanic.CLI.Models;
+using Mechanic.Core.Services.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace Mechanic.CLI.Infrastructure.Logging;
@@ -64,4 +65,7 @@ public static partial class LogMessages
     
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to write to settings file at path {SettingsPath} with exception")]
     public static partial void FailedToWriteToSettingsFile(this ILogger logger, string settingsPath, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to determine if {Exe} is on PATH, so executable must be set manually. Error was {OsError}")]
+    public static partial void ExecutableIsOnPath(this ILogger logger, string exe, OSError osError);
 }

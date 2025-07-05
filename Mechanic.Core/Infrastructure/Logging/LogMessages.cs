@@ -53,4 +53,13 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Unlinking game file {GameFilePath} ({GameFileId}) from source file {SourceFilePath} ({SourceFileId}) since the game file is being removed from tracking.")]
     public static partial void UnlinkingGameFile(this ILogger logger, string gameFilePath, Guid gameFileId, string sourceFilePath, Guid sourceFileId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Exception thrown while checking if executable {ExecutableName} exists in {Path}")]
+    public static partial void ExceptionThrownWhenCheckingForExeInPath(this ILogger logger, string executableName, string path, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "PATH variable contents: {PathVar}")]
+    public static partial void PathVariableContents(this ILogger logger, string pathVar);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "PATH variable was empty, so assuming executable is not in PATH")]
+    public static partial void PathVariableIsEmpty(this ILogger logger);
 }
