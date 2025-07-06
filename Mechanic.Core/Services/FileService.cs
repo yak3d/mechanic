@@ -9,5 +9,5 @@ public class FileService : IFileService
     public Task<string[]> GetFilesFromDirectoryAsync(string path, string searchPattern) => Task.FromResult(Directory.GetFiles(path, searchPattern));
     public Task<bool> DirectoryExists(string path) => Task.FromResult(Directory.Exists(path));
     public Task CreateDirectoryAsync(string path) => Task.FromResult(Directory.CreateDirectory(path));
-    public Task<bool> FileExists(string path) => Task.FromResult(File.Exists(path));
+    public Task<bool> FileExistsAsync(string path) => Task.FromResult(File.Exists(path));
 }

@@ -52,7 +52,7 @@ public class OSService(ILogger<OSService> logger, IFileService fileService) : IO
                         : executableName + extension;
 
                     var fullPathToExecutable = Path.Combine(pathDir, nameWithExtension);
-                    if (await fileService.FileExists(fullPathToExecutable))
+                    if (await fileService.FileExistsAsync(fullPathToExecutable))
                     {
                         return true;
                     }
@@ -61,7 +61,7 @@ public class OSService(ILogger<OSService> logger, IFileService fileService) : IO
             else
             {
                 var fullPathToExecutable = Path.Combine(pathDir, executableName);
-                if (await fileService.FileExists(fullPathToExecutable))
+                if (await fileService.FileExistsAsync(fullPathToExecutable))
                 {
                     return true;
                 }

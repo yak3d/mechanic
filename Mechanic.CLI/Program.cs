@@ -40,6 +40,7 @@ app.Configure(config =>
 {
     config.AddCommand<InitializeCommand>("init");
     config.AddCommand<ConfigureCommand>("configure");
+    config.AddCommand<CheckCommand>("check");
     config.AddBranch("file", file =>
     {
         file.SetDescription("Allows you to add, list, remove files tracked by Mechanic.");

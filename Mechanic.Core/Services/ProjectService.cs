@@ -11,6 +11,7 @@ using static LanguageExt.Prelude;
 
 public class ProjectService(
     ILogger<ProjectService> logger,
+    IFileService fileService,
     IProjectRepository projectRepository) : IProjectService
 {
     public async Task<MechanicProject> InitializeAsync(string path, string projectId, GameName gameName, string gamePath)
@@ -157,5 +158,44 @@ public class ProjectService(
 
             return projectResult != null && Enumerable.Any(projectResult.GameFiles, gameFile => gameFile.Path == path);
         });
+
+    public Task<Either<CheckError, Dictionary<SourceFile, bool>>> CheckSourceFilesAsync<T>() => throw new NotImplementedException();
+
+    public async Task<Either<CheckError, Dictionary<SourceFile, bool>>> CheckSourceFilesAsync()
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var files = project.SourceFiles;
+
+        return await this.CheckFileExistence(files);
+    }
+
+    public async Task<Either<CheckError, Dictionary<GameFile, bool>>> CheckGameFilesAsync()
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var files = project.GameFiles;
+
+        return await this.CheckFileExistence(files);
+    }
+
+    private async Task<Either<CheckError, Dictionary<T, bool>>> CheckFileExistence<T>(IEnumerable<T> files) where T : ProjectFile
+    {
+        try
+        {
+            var results = await Task.WhenAll(files.Select(async file =>
+            {
+                var fileExists = await fileService.FileExistsAsync(file.Path);
+                return new { file, fileExists };
+            }));
+
+            return results.ToDictionary(
+                result => result.file,
+                result => result.fileExists
+            );
+        }
+        catch (Exception)
+        {
+            return new CheckError();
+        }
+    }
 }
 
