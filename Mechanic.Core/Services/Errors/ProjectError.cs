@@ -1,6 +1,6 @@
 namespace Mechanic.Core.Services.Errors;
 
-public record ProjectError
+public record ProjectError(string? message)
 {
 
 }

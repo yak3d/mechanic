@@ -62,4 +62,7 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "PATH variable was empty, so assuming executable is not in PATH")]
     public static partial void PathVariableIsEmpty(this ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to get last modified time for file {FilePath} with exception")]
+    public static partial void FailedToFindLastModifiedTime(this ILogger logger, string filePath, Exception exception);
 }

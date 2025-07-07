@@ -175,6 +175,18 @@ public class JsonProjectRepository(
         return fileToRemove;
     }
 
+    public async Task<SourceFile?> FindSourceFileForGameFileIdAsync(Guid id)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        if (project == null)
+        {
+            throw new ProjectNotFoundException();
+        }
+
+        return project.SourceFiles.FirstOrDefault(x => x.GameFileLinks.Contains(id));
+    }
+
     private static JsonObject PrependSchema(JsonNode jsonNode, string schemaUrl)
     {
         var originalObject = jsonNode.AsObject();

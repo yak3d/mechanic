@@ -38,6 +38,6 @@ public interface IProjectService
     public Task<SourceFile?> FindSourceFileByIdAsync(Guid id);
     public Task<bool> SourceFileExistsWithPathAsync(string path);
     public Task<bool> GameFileExistsWithPathAsync(string path);
-    public Task<Either<CheckError, Dictionary<SourceFile, bool>>> CheckSourceFilesAsync();
-    public Task<Either<CheckError, Dictionary<GameFile, bool>>> CheckGameFilesAsync();
+    public Task<Either<ProjectError, Dictionary<SourceFile, FileCheckStatus>>> CheckSourceFilesAsync();
+    public Task<Either<ProjectError, Dictionary<GameFile, FileCheckStatus>>> CheckGameFilesAsync();
 }
