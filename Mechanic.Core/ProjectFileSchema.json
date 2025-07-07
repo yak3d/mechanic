@@ -30,7 +30,17 @@
           "type": "string",
           "enum": ["TES4Oblivion", "TES5Skyrim", "SkyrimSpecialEdition", "Fallout3", "FalloutNewVegas", "Fallout4", "Starfield"]
         }
-      },
+      }
+    },
+    "project": {
+      "description": "Settings for the project generally.",
+      "type": "object",
+      "properties": {
+        "usePyro": {
+          "description": "Denotes whether or not to compile scripts with Pyro",
+          "type": "boolean"
+        }
+      }
     },
     "sourceFiles": {
       "description": "List of files tracked by the project",

@@ -68,7 +68,7 @@ public class OSServiceTest : IDisposable
         if (shouldExist)
         {
             var fullPath = Path.Combine(pathDirectory, executableName);
-            _mockFileService.Setup(fs => fs.FileExists(fullPath))
+            _mockFileService.Setup(fs => fs.FileExistsAsync(fullPath))
                 .ReturnsAsync(true);
         }
 
@@ -97,7 +97,7 @@ public class OSServiceTest : IDisposable
         if (shouldExist)
         {
             var fullPath = Path.Combine(pathDirectory, executableName);
-            _mockFileService.Setup(fs => fs.FileExists(fullPath))
+            _mockFileService.Setup(fs => fs.FileExistsAsync(fullPath))
                 .ReturnsAsync(true);
         }
 
@@ -118,13 +118,13 @@ public class OSServiceTest : IDisposable
         Environment.SetEnvironmentVariable("PATH", testDir);
         _mockFileService.Setup(fs => fs.DirectoryExists(testDir)).ReturnsAsync(true);
         
-        _mockFileService.Setup(fs => fs.FileExists(Path.Combine(testDir, "testapp.exe")))
+        _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(testDir, "testapp.exe")))
             .ReturnsAsync(true);
-        _mockFileService.Setup(fs => fs.FileExists(Path.Combine(testDir, "testapp.cmd")))
+        _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(testDir, "testapp.cmd")))
             .ReturnsAsync(false);
-        _mockFileService.Setup(fs => fs.FileExists(Path.Combine(testDir, "testapp.bat")))
+        _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(testDir, "testapp.bat")))
             .ReturnsAsync(false);
-        _mockFileService.Setup(fs => fs.FileExists(Path.Combine(testDir, "testapp.com")))
+        _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(testDir, "testapp.com")))
             .ReturnsAsync(false);
 
         var result = await _osService.ExecutableIsInPathAsync(executableBaseName);
@@ -132,7 +132,7 @@ public class OSServiceTest : IDisposable
         result.IsRight.ShouldBeTrue();
         result.IfRight(found => found.ShouldBeTrue());
 
-        _mockFileService.Verify(fs => fs.FileExists(Path.Combine(testDir, "testapp.exe")), Times.Once);
+        _mockFileService.Verify(fs => fs.FileExistsAsync(Path.Combine(testDir, "testapp.exe")), Times.Once);
     }
     
     [Theory]
@@ -157,18 +157,18 @@ public class OSServiceTest : IDisposable
             
             if (OperatingSystem.IsWindows())
             {
-                _mockFileService.Setup(fs => fs.FileExists(Path.Combine(dir.Trim(), "testexe.exe")))
+                _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(dir.Trim(), "testexe.exe")))
                     .ReturnsAsync(false);
-                _mockFileService.Setup(fs => fs.FileExists(Path.Combine(dir.Trim(), "testexe.cmd")))
+                _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(dir.Trim(), "testexe.cmd")))
                     .ReturnsAsync(false);
-                _mockFileService.Setup(fs => fs.FileExists(Path.Combine(dir.Trim(), "testexe.bat")))
+                _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(dir.Trim(), "testexe.bat")))
                     .ReturnsAsync(false);
-                _mockFileService.Setup(fs => fs.FileExists(Path.Combine(dir.Trim(), "testexe.com")))
+                _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(dir.Trim(), "testexe.com")))
                     .ReturnsAsync(false);
             }
             else
             {
-                _mockFileService.Setup(fs => fs.FileExists(Path.Combine(dir.Trim(), executableName)))
+                _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(dir.Trim(), executableName)))
                     .ReturnsAsync(false);
             }
         }
@@ -198,12 +198,12 @@ public class OSServiceTest : IDisposable
         
         if (OperatingSystem.IsWindows())
         {
-            _mockFileService.Setup(fs => fs.FileExists(Path.Combine(directories[0], "foundexe.exe")))
+            _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(directories[0], "foundexe.exe")))
                 .ReturnsAsync(true);
         }
         else
         {
-            _mockFileService.Setup(fs => fs.FileExists(Path.Combine(directories[0], executableName)))
+            _mockFileService.Setup(fs => fs.FileExistsAsync(Path.Combine(directories[0], executableName)))
                 .ReturnsAsync(true);
         }
 

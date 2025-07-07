@@ -14,4 +14,5 @@ public interface IProjectRepository
     public Task<SourceFile> RemoveSourceFileByPathAsync(string path);
     public Task<GameFile> RemoveGameFileByIdAsync(Guid id);
     public Task<GameFile> RemoveGameFileByPathAsync(string path);
+    public Task<SourceFile?> FindSourceFileForGameFileIdAsync(Guid id);
 }

@@ -40,6 +40,8 @@ app.Configure(config =>
 {
     config.AddCommand<InitializeCommand>("init");
     config.AddCommand<ConfigureCommand>("configure");
+    config.AddCommand<CheckCommand>("check")
+        .WithDescription("Checks the files tracked by the project to see if they exist, and for game files if they exist and are up to date with the source file");
     config.AddBranch("file", file =>
     {
         file.SetDescription("Allows you to add, list, remove files tracked by Mechanic.");

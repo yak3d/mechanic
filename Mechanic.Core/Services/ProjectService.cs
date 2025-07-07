@@ -11,6 +11,7 @@ using static LanguageExt.Prelude;
 
 public class ProjectService(
     ILogger<ProjectService> logger,
+    IFileService fileService,
     IProjectRepository projectRepository) : IProjectService
 {
     public async Task<MechanicProject> InitializeAsync(string path, string projectId, GameName gameName, string gamePath)
@@ -157,5 +158,67 @@ public class ProjectService(
 
             return projectResult != null && Enumerable.Any(projectResult.GameFiles, gameFile => gameFile.Path == path);
         });
+
+    public Task<Either<CheckError, Dictionary<SourceFile, bool>>> CheckSourceFilesAsync<T>() => throw new NotImplementedException();
+
+    public async Task<Either<ProjectError, Dictionary<SourceFile, FileCheckStatus>>> CheckSourceFilesAsync()
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var files = project.SourceFiles;
+
+        return await this.CheckFileExistence(files);
+    }
+
+    public async Task<Either<ProjectError, Dictionary<GameFile, FileCheckStatus>>> CheckGameFilesAsync()
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var files = project.GameFiles;
+
+        return await this.CheckFileExistence(files);
+    }
+
+    private async Task<Either<ProjectError, Dictionary<T, FileCheckStatus>>> CheckFileExistence<T>(IEnumerable<T> files) where T : ProjectFile
+    {
+        try
+        {
+            var project = await this.GetCurrentProjectAsync();
+            var results = await Task.WhenAll(files.Select(async file =>
+            {
+                var checkPath = file is GameFile ? Path.Combine(project.GamePath, "Data", file.Path) : file.Path; // todo make this more concrete with a service or something idk
+                var fileExists = await fileService.FileExistsAsync(checkPath);
+
+                if (file is GameFile)
+                {
+                    var pairedSourceFile = await projectRepository.FindSourceFileForGameFileIdAsync(file.Id);
+
+                    if (pairedSourceFile != null)
+                    {
+                        var sourceFileLastModified = await fileService.GetLastModifiedTimeAsync(pairedSourceFile.Path);
+                        var gameFileLastModified = await fileService.GetLastModifiedTimeAsync(checkPath);
+
+                        if (sourceFileLastModified.IsRight && gameFileLastModified.IsRight)
+                        {
+                            if (sourceFileLastModified >= gameFileLastModified)
+                            {
+                                return new { File = file, Status = FileCheckStatus.OutOfDate };
+                            }
+                        }
+                    }
+                }
+
+                var existenceStatus = fileExists ? FileCheckStatus.Exists : FileCheckStatus.DoesNotExist;
+                return new { File = file, Status = existenceStatus };
+            }));
+
+            return results.ToDictionary(
+                result => result.File,
+                result => result.Status
+            );
+        }
+        catch (Exception)
+        {
+            return new CheckError();
+        }
+    }
 }
 
