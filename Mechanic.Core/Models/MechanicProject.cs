@@ -68,7 +68,7 @@ public class MechanicProject
 
     public void ChangeGame(GameName newGameName) => this.gameName = newGameName;
 
-    public Project.Models.Json.MechanicProject ToJson() => new()
+    public Mechanic.Core.Project.Models.Json.MechanicProject ToJson() => new()
     {
         Id = this.Id,
         Game = new Game
@@ -80,7 +80,7 @@ public class MechanicProject
         GameFiles = [.. this.GameFiles.Select(file => file.ToJson())]
     };
 
-    public static MechanicProject FromJsonObject(Project.Models.Json.MechanicProject jsonObject) => new()
+    public static MechanicProject FromJsonObject(Core.Project.Models.Json.MechanicProject jsonObject) => new()
     {
         Id = jsonObject.Id,
         GameName = jsonObject.Game.Name.FromJsonGame(),

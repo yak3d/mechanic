@@ -11,5 +11,6 @@
         <PackageReference Include="Microsoft.Build.Framework" Version="17.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0" PrivateAssets="all" />
         <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="11.3.2" />
+        <PackageReference Include="XmlSchemaClassGenerator-beta" Version="2.1.1184" />
     </ItemGroup>
 </Project>

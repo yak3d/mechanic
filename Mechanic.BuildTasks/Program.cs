@@ -1,4 +1,5 @@
-﻿using NJsonSchema;
+﻿using Mechanic.BuildTasks;
+using NJsonSchema;
 using NJsonSchema.CodeGeneration.CSharp;
 
 if (args.Length < 2)
@@ -48,6 +49,9 @@ try
 
     await File.WriteAllTextAsync(outputFile, code);
     Console.WriteLine($"✅ Successfully generated classes to: {outputFile}");
+
+    var pyroCodeGen = new PyroSchemaCodeGenTask(Path.GetDirectoryName(outputFile));
+    await pyroCodeGen.GenerateSchemaCode();
 
     return 0;
 }

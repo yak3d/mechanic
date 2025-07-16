@@ -5,37 +5,35 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <JsonSchemaFile Condition="'$(JsonSchemaFile)' == ''">$(MSBuildProjectDirectory)\ProjectFileSchema.json</JsonSchemaFile>
     <JsonSchemaOutputDir Condition="'$(JsonSchemaOutputDir)' == ''">$(MSBuildProjectDirectory)\Generated</JsonSchemaOutputDir>
     <JsonSchemaOutputFile Condition="'$(JsonSchemaOutputFile)' == ''">$(JsonSchemaOutputDir)\ProjectModels.cs</JsonSchemaOutputFile>
     <JsonSchemaNamespace Condition="'$(JsonSchemaNamespace)' == ''">$(RootNamespace).Project.Models.Json</JsonSchemaNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
     <PackageReference Include="LanguageExt.Core" Version="4.4.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Folder Include="Generated\" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="$(JsonSchemaOutputFile)" />
-    <None Include="$(JsonSchemaOutputFile)" Condition="Exists('$(JsonSchemaOutputFile)')" />
   </ItemGroup>
-  
+
   <Target Name="GenerateFromSchema" BeforeTargets="CoreCompile" Condition="Exists('$(JsonSchemaFile)')">
     <Message Text="🚀 Starting JSON Schema code generation..." Importance="high" />
 
     <!-- Create output directory -->
     <MakeDir Directories="$(JsonSchemaOutputDir)" Condition="!Exists('$(JsonSchemaOutputDir)')" />
 
-    <!-- Use dotnet run to execute the generation -->
     <Exec Command="dotnet run --project &quot;$(MSBuildProjectDirectory)\..\Mechanic.BuildTasks&quot; --configuration $(Configuration) -- &quot;$(JsonSchemaFile)&quot; &quot;$(JsonSchemaOutputFile)&quot; &quot;$(JsonSchemaNamespace)&quot;" ContinueOnError="false" />
 
     <ItemGroup>

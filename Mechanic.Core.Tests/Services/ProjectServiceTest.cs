@@ -12,14 +12,16 @@ public class ProjectServiceTest
 {
     private const string TestGamePath = @"C:\Program Files (x86)\Steam\steamapps\common\Mechanic\Mechanic.exe";
     private readonly Mock<ILogger<ProjectService>> _mockLogger;
+    private readonly Mock<IFileService> _mockFileService;
     private readonly Mock<IProjectRepository> _mockProjectRepository;
     private readonly ProjectService _projectService;
 
     public ProjectServiceTest()
     {
         _mockLogger = new Mock<ILogger<ProjectService>>();
+        _mockFileService = new Mock<IFileService>();
         _mockProjectRepository = new Mock<IProjectRepository>();
-        _projectService = new ProjectService(_mockLogger.Object, _mockProjectRepository.Object);
+        _projectService = new ProjectService(_mockLogger.Object, _mockFileService.Object, _mockProjectRepository.Object);
     }
 
     [Fact]
