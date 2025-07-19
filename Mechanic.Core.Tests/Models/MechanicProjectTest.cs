@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using Mechanic.Core.Models;
 using Mechanic.Core.Project.Models.Json;
 using Shouldly;
 using MechanicProject = Mechanic.Core.Models.MechanicProject;

@@ -50,6 +50,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         {
             Id = "test-project-123",
             GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         };
 
@@ -78,6 +79,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         {
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         };
 
@@ -118,8 +120,9 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     {
         const string projectId = "new-project-456";
         const GameName game = GameName.Tes4Oblivion;
+        ProjectSettings projectSettings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        await _repository.InitializeProjectAsync(projectId, game, TestGamePath);
+        await _repository.InitializeProjectAsync(projectId, game, projectSettings, TestGamePath);
 
         File.Exists(_testProjectFile).ShouldBeTrue();
 
@@ -136,6 +139,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         {
             Id = "roundtrip-test",
             GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         };
 
@@ -149,8 +153,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_OverwritesExistingFile()
     {
-        var firstProject = new MechanicProject { Id = "first", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
-        var secondProject = new MechanicProject { Id = "second", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
+        var firstProject = new MechanicProject { Id = "first", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
+        var secondProject = new MechanicProject { Id = "second", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(firstProject);
         await _repository.SaveCurrentProjectAsync(secondProject);
@@ -167,7 +171,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [InlineData("unicode-测试")]
     public async Task SaveAndRetrieve_WithVariousProjectIds_HandlesCorrectly(string projectId)
     {
-        var project = new MechanicProject { Id = projectId, GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
+        var project = new MechanicProject { Id = projectId, GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.GetCurrentProjectAsync();
@@ -190,7 +194,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_CallsFileServiceWithCorrectParameters()
     {
-        var project = new MechanicProject { Id = "test", GameName = GameName.Tes4Oblivion, GamePath = TestGamePath };
+        var project = new MechanicProject { Id = "test", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
 
         await _repository.SaveCurrentProjectAsync(project);
 
@@ -217,7 +221,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task InitializeProjectAsync_IgnoresPassedGameParameter()
     {
-        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion, TestGamePath);
+        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion, new ProjectSettingsBuilder().EnablePyro().Build(), TestGamePath);
 
         var result = await _repository.GetCurrentProjectAsync();
 
@@ -244,6 +248,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             SourceFiles = [new SourceFile
             {
                 Id = fileId,
@@ -272,6 +277,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             SourceFiles = [new SourceFile
             {
                 Id = fileId,
@@ -306,6 +312,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             SourceFiles = [new SourceFile
             {
                 Id = fileId,
@@ -327,6 +334,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             SourceFiles = [new SourceFile
             {
                 Id = fileId,
@@ -348,6 +356,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -376,6 +385,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -407,6 +417,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -456,6 +467,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -506,6 +518,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -564,6 +577,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,
@@ -585,6 +599,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [new GameFile
             {
                 Id = gameFileId,

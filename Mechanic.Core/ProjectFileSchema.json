@@ -32,7 +32,7 @@
         }
       }
     },
-    "project": {
+    "projectSettings": {
       "description": "Settings for the project generally.",
       "type": "object",
       "properties": {
@@ -105,7 +105,8 @@
               "MAT",
               "DDS",
               "WEM",
-              "PEX"
+              "PEX",
+              "PPJ"
             ]
           }
         }

@@ -68,4 +68,7 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to serialize Pyro project to XML: ")]
     public static partial void FailedToSerializePyroProject(this ILogger logger, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Writing project file to {FilePath}")]
+    public static partial void WritingProjectFile(this ILogger logger, string filePath);
 }

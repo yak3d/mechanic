@@ -25,7 +25,7 @@ public class XmlSerializerTest
 
         var result = await service.SerializeAsync(nestedObject);
 
-        result.ShouldContain("<ComplexTestData>");
+        result.ShouldContain("<ComplexTestData");
         result.ShouldContain("<Header>");
         result.ShouldContain("<Items>");
         result.ShouldContain("HEADER_DATA");

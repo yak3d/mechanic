@@ -17,6 +17,8 @@ public class MechanicProject
         init => this.gameName = value;
     }
 
+    public ProjectSettings? ProjectSettings { get; init; }
+
     public required string GamePath { get; init; }
 
     public List<SourceFile> SourceFiles { get; init; } = [];
@@ -76,6 +78,7 @@ public class MechanicProject
             Name = this.GameName.ToJson(),
             Path = this.GamePath
         },
+        ProjectSettings = this.ProjectSettings.ToJsonModel(),
         SourceFiles = [.. this.SourceFiles.Select(file => file.ToJson())],
         GameFiles = [.. this.GameFiles.Select(file => file.ToJson())]
     };
@@ -85,6 +88,7 @@ public class MechanicProject
         Id = jsonObject.Id,
         GameName = jsonObject.Game.Name.FromJsonGame(),
         GamePath = jsonObject.Game.Path,
+        ProjectSettings = jsonObject.ProjectSettings?.ToDomain(),
         SourceFiles = [.. jsonObject.SourceFiles.Select(SourceFile.FromJsonProject)],
         GameFiles = [.. jsonObject.GameFiles.Select(GameFile.FromJson)]
     };

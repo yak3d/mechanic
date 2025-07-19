@@ -1,6 +1,4 @@
 
-using Mechanic.Core.Models;
-
 namespace Mechanic.CLI.Models;
 
 public class MechanicProject
@@ -14,6 +12,8 @@ public class MechanicProject
         get => this._gameName;
         init => this._gameName = value;
     }
+    
+    public required ProjectSettings ProjectSettings { get; init; }
 
     public required string GamePath { get; init; }
 
@@ -46,6 +46,7 @@ public class MechanicProject
             Id = Id,
             GameName = GameName.ToDomain(),
             GamePath = GamePath,
+            ProjectSettings = ProjectSettings.ToDomain(),
             SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
             GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
         };
@@ -58,6 +59,7 @@ public class MechanicProject
             Id = domainProject.Id,
             GameName = domainProject.GameName.FromDomain(),
             GamePath = domainProject.GamePath,
+            ProjectSettings = domainProject.ProjectSettings.ToCliModel(),
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
             GameFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };

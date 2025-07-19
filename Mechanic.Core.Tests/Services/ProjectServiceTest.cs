@@ -30,16 +30,18 @@ public class ProjectServiceTest
         var path = "mechanic.json";
         var projectId = "com.example.MyProject";
         var game = GameName.SkyrimSpecialEdition;
+        var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath));
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, default, default));
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = projectId,
             GameName = game,
+            ProjectSettings = settings,
             GamePath = TestGamePath
         })!);
 
-        var result = await _projectService.InitializeAsync(path, projectId, game, TestGamePath);
+        var result = await _projectService.InitializeAsync(path, projectId, game, settings, TestGamePath, [], []);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
@@ -48,7 +50,7 @@ public class ProjectServiceTest
         result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
-        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, It.IsAny<List<SourceFile>>(), It.IsAny<List<GameFile>>()), Times.Once);
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
     }
 
@@ -58,10 +60,11 @@ public class ProjectServiceTest
         var path = "mechanic.json";
         var projectId = "com.example.MyProject";
         var game = GameName.SkyrimSpecialEdition;
+        var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, TestGamePath)).Throws<InvalidOperationException>();
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, default, default)).Throws<InvalidOperationException>();
 
-        await _projectService.InitializeAsync(path, projectId, game, TestGamePath).ShouldThrowAsync<InvalidOperationException>();
+        await _projectService.InitializeAsync(path, projectId, game, settings, TestGamePath, [], []).ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -71,6 +74,7 @@ public class ProjectServiceTest
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         })!);
 
@@ -96,6 +100,7 @@ public class ProjectServiceTest
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         })!);
 
@@ -113,6 +118,7 @@ public class ProjectServiceTest
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GamePath = TestGamePath
         };
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
@@ -146,6 +152,7 @@ public class ProjectServiceTest
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [
                 new GameFile
                 {
@@ -184,6 +191,7 @@ public class ProjectServiceTest
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
             GamePath = TestGamePath,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
             GameFiles = [
                 new GameFile
                 {

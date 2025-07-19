@@ -33,6 +33,8 @@ public class PyroService(ILogger<PyroService> logger, IXmlSerializer xmlSerializ
                     BgsFileConstants.ScriptsDirectoryName,
                     filename
                 );
+
+                logger.WritingProjectFile(projectFilePath);
                 await fileService.WriteAllText(
                     projectFilePath,
                     projectAsXml

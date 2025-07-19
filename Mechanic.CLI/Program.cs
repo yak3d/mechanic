@@ -16,9 +16,9 @@ using Spectre.Console.Cli;
 var registrations = new ServiceCollection();
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.SpectreConsole(
-        outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}"
-    )
+    .WriteTo.Console(
+        outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}",
+        theme: AnsiConsoleTheme.Code)
     .CreateLogger();
 
 registrations.AddLogging(builder => builder.AddSerilog());
@@ -27,6 +27,9 @@ registrations.AddSingleton<IProjectRepository, JsonProjectRepository>();
 registrations.AddSingleton<IProjectService, ProjectService>();
 registrations.AddSingleton<IOSService, OSService>();
 registrations.AddSingleton<ILocalSettingsService, JsonLocalSettingsService>();
+registrations.AddSingleton<IXmlSerializer, XmlSerializer>();
+registrations.AddSingleton<IPyroService, PyroService>();
+
 if (OperatingSystem.IsWindows())
 {
     registrations.AddSingleton<IRegistryService, RegistryService>();

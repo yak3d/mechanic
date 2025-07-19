@@ -1,17 +1,22 @@
 ﻿using System.ComponentModel;
 using Mechanic.CLI.Commands.File;
+using Mechanic.CLI.Contracts;
 using Mechanic.CLI.Models;
+using Mechanic.CLI.Models.Settings;
 using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Mechanic.Core.Models.Steam;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using GameFile = Mechanic.CLI.Models.GameFile;
+using GameFileType = Mechanic.CLI.Models.GameFileType;
 using GameName = Mechanic.CLI.Models.GameName;
+using SourceFile = Mechanic.CLI.Models.SourceFile;
 
 namespace Mechanic.CLI.Commands;
 
 [Description("Initializes a project in the current directory. This will create the project file in the current directory with the specified project ID. The project ID must be in reverse DNS format. For example: com.example.myproject.")]
-public class InitializeCommand(IProjectService projectService, SteamService steamService) : AsyncCommand<InitializeCommand.Settings>
+public class InitializeCommand(IProjectService projectService, SteamService steamService, IPyroService pyroService, ILocalSettingsService localSettingsService) : AsyncCommand<InitializeCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -26,6 +31,10 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         [Description("The path to the game the mod project is for.")]
         [CommandOption("-g|--game-path")]
         public string? GamePath { get; init; }
+        
+        [Description("Enable support for Pyro Papyrus compilation. This requires Pyro to be specified in the global config. Run `configure` if you want to specify the path to Pyro")]
+        [CommandOption("--enable-pyro")]
+        public bool EnablePyro { get; init; }
 
         public override ValidationResult Validate()
         {
@@ -41,10 +50,52 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         var projectId = settings.ProjectId ?? PromptForProjectId();
 
         var gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
+        var projectSettingsBuilder = new ProjectSettingsBuilder();
 
         var gamePath = settings.GamePath ?? await PromptForGamePath();
+        var sourceFiles = new List<SourceFile>();
+        var gameFiles = new List<GameFile>();
 
-        await projectService.InitializeAsync(Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"), projectId, gameName.ToDomain(), gamePath);
+        if (settings.EnablePyro)
+        {
+            var usePyroInPath =
+                await localSettingsService.ReadSettingAsync<bool>(LocalSettingsOptions.SettingUsePyroInPath);
+            
+
+            if (!usePyroInPath)
+            {
+                var pyroPath = await localSettingsService.ReadSettingAsync<string>(LocalSettingsOptions.SettingPyroPath);
+
+                if (string.IsNullOrEmpty(pyroPath))
+                {
+                    AnsiConsole.MarkupLine($"[red]The option \"--enable-pyro\" was provided, but the global configuration is missing either {LocalSettingsOptions.SettingUsePyroInPath} set to true or {LocalSettingsOptions.SettingPyroPath} is missing. Run `configure` if you want to specify the path to Pyro.[/]");
+                    return -1;
+                }
+            }
+            var ppjFileResult = await pyroService.CreatePyroProjectAsync(gameName.ToDomain(), projectId, "TEST", gamePath);
+            ppjFileResult.Match(
+                Right: path =>
+                {
+                    gameFiles.Add(new GameFile
+                    {
+                        Path = path,
+                        GameFileType = GameFileType.PapyrusProject
+                    });
+                    projectSettingsBuilder.EnablePyro();
+                },
+                Left: pyroError => AnsiConsole.MarkupLine($"[red]Error creating Pyro Project: {pyroError}[/]")
+            );
+        }
+
+        await projectService.InitializeAsync(
+            Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"),
+            projectId,
+            gameName.ToDomain(),
+            projectSettingsBuilder.Build(),
+            gamePath,
+            sourceFiles.Select(file => file.ToDomain()).ToList(),
+            gameFiles.Select(file => file.ToDomain()).ToList()
+        );
 
         return 0;
     }
@@ -89,7 +140,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
     {
         return AnsiConsole.Prompt(
             new TextPrompt<string>(
-                "Enter a project ID in reverse DNS format. [dim]For example: com.example.myproject[/]:"
+                "Enter a project ID in reverse DNS format. [dim]For example: com.example.MyProject[/]:"
                 )
             );
     }
