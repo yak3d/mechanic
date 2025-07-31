@@ -6,8 +6,14 @@ using Services.Errors;
 
 public interface IProjectService
 {
-    public Task<MechanicProject> InitializeAsync(string path, string projectId, GameName gameName,
-        ProjectSettings projectSettings, string gamePath, List<SourceFile> sourceFiles, List<GameFile> gameFiles);
+    public Task<MechanicProject> InitializeAsync(string path,
+        string projectId,
+        string projectNamespace,
+        GameName gameName,
+        ProjectSettings projectSettings,
+        string gamePath,
+        List<SourceFile> sourceFiles,
+        List<GameFile> gameFiles);
     public Task<MechanicProject> GetCurrentProjectAsync();
     public Task<MechanicProject> UpdateProjectGameAsync(GameName gameName);
     public Task<Either<SourceFileAddError, SourceFile>> AddSourceFileAsync(string path, SourceFileType fileType);

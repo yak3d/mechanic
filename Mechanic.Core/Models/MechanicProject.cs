@@ -10,6 +10,7 @@ public class MechanicProject
     [JsonProperty("$schema")]
     public string Schema { get; } = "Mechanic.Core/ProjectFileSchema.json";
     public required string Id { get; init; }
+    public required string Namespace { get; init; }
 
     public required GameName GameName
     {
@@ -73,12 +74,13 @@ public class MechanicProject
     public Mechanic.Core.Project.Models.Json.MechanicProject ToJson() => new()
     {
         Id = this.Id,
+        Namespace = this.Namespace,
         Game = new Game
         {
             Name = this.GameName.ToJson(),
             Path = this.GamePath
         },
-        ProjectSettings = this.ProjectSettings.ToJsonModel(),
+        ProjectSettings = this.ProjectSettings?.ToJsonModel(),
         SourceFiles = [.. this.SourceFiles.Select(file => file.ToJson())],
         GameFiles = [.. this.GameFiles.Select(file => file.ToJson())]
     };
@@ -86,6 +88,7 @@ public class MechanicProject
     public static MechanicProject FromJsonObject(Core.Project.Models.Json.MechanicProject jsonObject) => new()
     {
         Id = jsonObject.Id,
+        Namespace = jsonObject.Namespace,
         GameName = jsonObject.Game.Name.FromJsonGame(),
         GamePath = jsonObject.Game.Path,
         ProjectSettings = jsonObject.ProjectSettings?.ToDomain(),

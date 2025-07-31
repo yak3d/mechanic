@@ -54,6 +54,7 @@ public class JsonProjectRepository(
     public async Task<bool> ProjectExistsAsync() => await Task.FromResult(File.Exists(projectFilePath));
 
     public async Task InitializeProjectAsync(string id,
+        string projectNamespace,
         GameName gameName,
         ProjectSettings projectSettings,
         string gamePath,
@@ -61,6 +62,7 @@ public class JsonProjectRepository(
         List<GameFile>? gameFiles = default) => await this.SaveCurrentProjectAsync(new MechanicProject
         {
             Id = id,
+            Namespace = projectNamespace,
             GameName = gameName,
             GamePath = gamePath,
             ProjectSettings = projectSettings,

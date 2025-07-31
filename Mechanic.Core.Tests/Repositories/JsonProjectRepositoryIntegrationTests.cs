@@ -50,8 +50,10 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         {
             Id = "test-project-123",
             GameName = GameName.Tes4Oblivion,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         };
 
         await _repository.SaveCurrentProjectAsync(expectedProject);
@@ -80,7 +82,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         };
 
         await _repository.SaveCurrentProjectAsync(project);
@@ -122,7 +125,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         const GameName game = GameName.Tes4Oblivion;
         ProjectSettings projectSettings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        await _repository.InitializeProjectAsync(projectId, game, projectSettings, TestGamePath);
+        await _repository.InitializeProjectAsync(projectId, "TEST", game, projectSettings, TestGamePath);
 
         File.Exists(_testProjectFile).ShouldBeTrue();
 
@@ -139,8 +142,10 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         {
             Id = "roundtrip-test",
             GameName = GameName.Tes4Oblivion,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         };
 
         await _repository.SaveCurrentProjectAsync(originalProject);
@@ -153,8 +158,24 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_OverwritesExistingFile()
     {
-        var firstProject = new MechanicProject { Id = "first", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
-        var secondProject = new MechanicProject { Id = "second", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
+        var firstProject = new MechanicProject
+        {
+            Id = "first",
+            GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "FIRST"
+        };
+        var secondProject = new MechanicProject
+        {
+            Id = "second",
+            GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "SECOND" 
+        };
 
         await _repository.SaveCurrentProjectAsync(firstProject);
         await _repository.SaveCurrentProjectAsync(secondProject);
@@ -171,7 +192,15 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [InlineData("unicode-测试")]
     public async Task SaveAndRetrieve_WithVariousProjectIds_HandlesCorrectly(string projectId)
     {
-        var project = new MechanicProject { Id = projectId, GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
+        var project = new MechanicProject
+        {
+            Id = projectId,
+            GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
+        };
 
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.GetCurrentProjectAsync();
@@ -194,7 +223,15 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task SaveCurrentProjectAsync_CallsFileServiceWithCorrectParameters()
     {
-        var project = new MechanicProject { Id = "test", GameName = GameName.Tes4Oblivion, ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(), GamePath = TestGamePath };
+        var project = new MechanicProject
+        {
+            Id = "test",
+            GameName = GameName.Tes4Oblivion,
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
+        };
 
         await _repository.SaveCurrentProjectAsync(project);
 
@@ -221,7 +258,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
     [Fact]
     public async Task InitializeProjectAsync_IgnoresPassedGameParameter()
     {
-        await _repository.InitializeProjectAsync("test-id", GameName.Tes4Oblivion, new ProjectSettingsBuilder().EnablePyro().Build(), TestGamePath);
+        await _repository.InitializeProjectAsync("test-id", "TEST", GameName.Tes4Oblivion, new ProjectSettingsBuilder().EnablePyro().Build(), TestGamePath);
 
         var result = await _repository.GetCurrentProjectAsync();
 
@@ -248,13 +285,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            SourceFiles = [new SourceFile
-            {
-                Id = fileId,
-                Path = "test\\path\\test.tiff",
-                FileType = SourceFileType.Tiff
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            SourceFiles =
+            [
+                new SourceFile
+                {
+                    Id = fileId,
+                    Path = "test\\path\\test.tiff",
+                    FileType = SourceFileType.Tiff
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -277,13 +319,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            SourceFiles = [new SourceFile
-            {
-                Id = fileId,
-                Path = testPathTestTiff,
-                FileType = SourceFileType.Tiff
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            SourceFiles =
+            [
+                new SourceFile
+                {
+                    Id = fileId,
+                    Path = testPathTestTiff,
+                    FileType = SourceFileType.Tiff
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -312,13 +359,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            SourceFiles = [new SourceFile
-            {
-                Id = fileId,
-                Path = "test\\path\\test.tiff",
-                FileType = SourceFileType.Tiff
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            SourceFiles =
+            [
+                new SourceFile
+                {
+                    Id = fileId,
+                    Path = "test\\path\\test.tiff",
+                    FileType = SourceFileType.Tiff
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -334,13 +386,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            SourceFiles = [new SourceFile
-            {
-                Id = fileId,
-                Path = "test\\path\\test.tiff",
-                FileType = SourceFileType.Tiff
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            SourceFiles =
+            [
+                new SourceFile
+                {
+                    Id = fileId,
+                    Path = "test\\path\\test.tiff",
+                    FileType = SourceFileType.Tiff
+                }
+            ],
+            Namespace = "TEST" 
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -356,13 +413,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = "test\\path\\test.dds",
-                GameFileType = GameFileType.DirectDrawSurface
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = "test\\path\\test.dds",
+                    GameFileType = GameFileType.DirectDrawSurface
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -385,13 +447,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = testPathTestDds,
-                GameFileType = GameFileType.DirectDrawSurface
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = testPathTestDds,
+                    GameFileType = GameFileType.DirectDrawSurface
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -417,14 +484,19 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = "test\\textures\\armor.dds",
-                GameFileType = GameFileType.DirectDrawSurface
-            }],
-            SourceFiles = [
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = "test\\textures\\armor.dds",
+                    GameFileType = GameFileType.DirectDrawSurface
+                }
+            ],
+            SourceFiles =
+            [
                 new SourceFile
                 {
                     Id = sourceFileId,
@@ -439,7 +511,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
                     FileType = SourceFileType.Fbx,
                     GameFileLinks = []
                 }
-            ]
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -467,14 +540,19 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = gameFilePath,
-                GameFileType = GameFileType.WwiseEncodedMedia
-            }],
-            SourceFiles = [
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = gameFilePath,
+                    GameFileType = GameFileType.WwiseEncodedMedia
+                }
+            ],
+            SourceFiles =
+            [
                 new SourceFile
                 {
                     Id = sourceFileId,
@@ -489,7 +567,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
                     FileType = SourceFileType.Psc,
                     GameFileLinks = []
                 }
-            ]
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -518,14 +597,19 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = "test\\materials\\metal.mat",
-                GameFileType = GameFileType.Material
-            }],
-            SourceFiles = [
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = "test\\materials\\metal.mat",
+                    GameFileType = GameFileType.Material
+                }
+            ],
+            SourceFiles =
+            [
                 new SourceFile
                 {
                     Id = sourceFileId1,
@@ -547,7 +631,8 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
                     FileType = SourceFileType.Blend,
                     GameFileLinks = []
                 }
-            ]
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -577,13 +662,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = "test\\path\\test.dds",
-                GameFileType = GameFileType.DirectDrawSurface
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = "test\\path\\test.dds",
+                    GameFileType = GameFileType.DirectDrawSurface
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);
@@ -599,13 +689,18 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             Id = "integration-test-project",
             GameName = GameName.Tes4Oblivion,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [new GameFile
-            {
-                Id = gameFileId,
-                Path = "test\\path\\test.dds",
-                GameFileType = GameFileType.DirectDrawSurface
-            }]
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
+                new GameFile
+                {
+                    Id = gameFileId,
+                    Path = "test\\path\\test.dds",
+                    GameFileType = GameFileType.DirectDrawSurface
+                }
+            ],
+            Namespace = "TEST"
         };
         
         await _repository.SaveCurrentProjectAsync(project);

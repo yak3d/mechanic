@@ -16,6 +16,14 @@
         "net.company.project.module"
       ]
     },
+    "namespace": {
+      "description": "A short (usually 3-5 character) tag that is prepended to files and forms to namespace them to your project.",
+      "type": "string",
+      "examples": [
+        "BGS",
+        "YAK"
+      ]
+    },
     "game": {
       "description": "The details of the game the mod project is for.",
       "type": "object",

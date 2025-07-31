@@ -6,6 +6,7 @@ public class MechanicProject
     private GameName _gameName;
 
     public required string Id { get; init; }
+    public required string Namespace { get; init; }
 
     public required CLI.Models.GameName GameName
     {
@@ -44,6 +45,7 @@ public class MechanicProject
         return new Core.Models.MechanicProject
         {
             Id = Id,
+            Namespace = Namespace,
             GameName = GameName.ToDomain(),
             GamePath = GamePath,
             ProjectSettings = ProjectSettings.ToDomain(),
@@ -57,6 +59,7 @@ public class MechanicProject
         return new MechanicProject
         {
             Id = domainProject.Id,
+            Namespace = domainProject.Namespace,
             GameName = domainProject.GameName.FromDomain(),
             GamePath = domainProject.GamePath,
             ProjectSettings = domainProject.ProjectSettings.ToCliModel(),

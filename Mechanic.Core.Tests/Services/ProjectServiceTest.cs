@@ -32,16 +32,17 @@ public class ProjectServiceTest
         var game = GameName.SkyrimSpecialEdition;
         var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, default, default));
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default));
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = projectId,
             GameName = game,
             ProjectSettings = settings,
-            GamePath = TestGamePath
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         })!);
 
-        var result = await _projectService.InitializeAsync(path, projectId, game, settings, TestGamePath, [], []);
+        var result = await _projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
@@ -50,7 +51,7 @@ public class ProjectServiceTest
         result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
-        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, It.IsAny<List<SourceFile>>(), It.IsAny<List<GameFile>>()), Times.Once);
+        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, It.IsAny<List<SourceFile>>(), It.IsAny<List<GameFile>>()), Times.Once);
         _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
     }
 
@@ -62,9 +63,9 @@ public class ProjectServiceTest
         var game = GameName.SkyrimSpecialEdition;
         var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, game, settings, TestGamePath, default, default)).Throws<InvalidOperationException>();
+        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default)).Throws<InvalidOperationException>();
 
-        await _projectService.InitializeAsync(path, projectId, game, settings, TestGamePath, [], []).ShouldThrowAsync<InvalidOperationException>();
+        await _projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []).ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
@@ -74,8 +75,10 @@ public class ProjectServiceTest
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         })!);
 
         var result = await _projectService.GetCurrentProjectAsync();
@@ -96,12 +99,14 @@ public class ProjectServiceTest
     [Fact]
     public async Task ProjectService_UpdateProjectGameAsync_UpdatesProjectGame()
     {
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(result: new MechanicProject
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         })!);
 
         var result = await _projectService.UpdateProjectGameAsync(GameName.Starfield);
@@ -118,8 +123,10 @@ public class ProjectServiceTest
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GamePath = TestGamePath
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GamePath = TestGamePath,
+            Namespace = "TEST"
         };
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
@@ -152,14 +159,17 @@ public class ProjectServiceTest
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
                 new GameFile
                 {
                     Id = existingGameFileId,
                     Path = "path/to/file.dds"
                 }
-            ]
+            ],
+            Namespace = "TEST"
         };
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
@@ -191,14 +201,17 @@ public class ProjectServiceTest
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
             GamePath = TestGamePath,
-            ProjectSettings = new ProjectSettingsBuilder().EnablePyro().Build(),
-            GameFiles = [
+            ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
+                .Build(),
+            GameFiles =
+            [
                 new GameFile
                 {
                     Id = existingGameFileId,
                     Path = "path/to/file.dds"
                 }
-            ]
+            ],
+            Namespace = "TEST"
         };
         _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 

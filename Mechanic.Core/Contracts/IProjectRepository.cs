@@ -9,11 +9,13 @@ public interface IProjectRepository
     public Task<bool> ProjectExistsAsync();
 
     public Task InitializeProjectAsync(string id,
+        string projectNamespace,
         GameName gameName,
         ProjectSettings projectSettings,
         string gamePath,
         List<SourceFile>? sourceFiles = default,
-        List<GameFile>? gameFiles = default);
+        List<GameFile>? gameFiles = default
+    );
     public Task<GameFile?> FindGameFileByIdAsync(Guid id);
     public Task<SourceFile?> FindSourceFileByIdAsync(Guid id);
     public Task<SourceFile> RemoveSourceFileByIdAsync(Guid id);

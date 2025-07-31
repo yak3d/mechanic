@@ -21,15 +21,19 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
     public sealed class Settings : CommandSettings
     {
         [Description("The project ID in reverse DNS order.")]
-        [CommandOption("-p|--project-id")]
+        [CommandOption("-i|--project-id")]
         public string? ProjectId { get; init; }
+        
+        [Description("The namespace for the project.")]
+        [CommandOption("-n|--namespace")]
+        public string? Namespace { get; init; }
 
         [Description("The game the mod project is for.")]
-        [CommandOption("-n|--game-name")]
+        [CommandOption("-g|--game-name")]
         public string? GameName { get; init; }
 
         [Description("The path to the game the mod project is for.")]
-        [CommandOption("-g|--game-path")]
+        [CommandOption("-p|--game-path")]
         public string? GamePath { get; init; }
         
         [Description("Enable support for Pyro Papyrus compilation. This requires Pyro to be specified in the global config. Run `configure` if you want to specify the path to Pyro")]
@@ -48,6 +52,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var projectId = settings.ProjectId ?? PromptForProjectId();
+        var projectNamespace = settings.Namespace ?? PromptForNamespace();
 
         var gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
         var projectSettingsBuilder = new ProjectSettingsBuilder();
@@ -90,6 +95,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         await projectService.InitializeAsync(
             Path.Join(Directory.GetCurrentDirectory(), "mechanic.json"),
             projectId,
+            projectNamespace,
             gameName.ToDomain(),
             projectSettingsBuilder.Build(),
             gamePath,
@@ -99,6 +105,10 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
 
         return 0;
     }
+
+    private static string PromptForNamespace() => AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter a namespace:")
+        );
 
     private async Task<string> PromptForGamePath()
     {
