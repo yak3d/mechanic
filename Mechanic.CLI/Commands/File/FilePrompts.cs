@@ -38,10 +38,10 @@ public static class FilePrompts
             title,
             choiceHeader,
             files,
-           actionChoices 
+           actionChoices
         );
     }
-    
+
     public static SourceFile? PromptForSourceFile(
         string title,
         string choiceHeader,
@@ -60,7 +60,7 @@ public static class FilePrompts
                 _ => null
             };
     }
-    
+
     public static PromptChoice PromptForGameFileAsPromptChoice(
         string title,
         string choiceHeader,
@@ -94,11 +94,11 @@ public static class FilePrompts
                 _ => null
             };
     }
-    
-    // ReSharper disable once NotAccessedPositionalProperty.Global
-    private record PromptFileChoiceHeader(string Header) : PromptChoice(Header);
 
-    public record ProjectFileChoice(ProjectFile File) : PromptChoice($"{File.Path} ({File.Id})");
-    private record ActionsChoiceHeader() : PromptChoice("Actions:");
-    private record CancelChoice() : PromptChoice("Cancel");
+    // ReSharper disable once NotAccessedPositionalProperty.Local
+    private sealed record PromptFileChoiceHeader(string Header) : PromptChoice(Header);
+
+    public sealed record ProjectFileChoice(ProjectFile File) : PromptChoice($"{File.Path} ({File.Id})");
+    private sealed record ActionsChoiceHeader() : PromptChoice("Actions:");
+    private sealed record CancelChoice() : PromptChoice("Cancel");
 }

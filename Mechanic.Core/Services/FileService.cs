@@ -22,7 +22,7 @@ public class FileService(ILogger<FileService> logger) : IFileService
         {
             var fileInfo = new FileInfo(path);
 
-            return fileInfo.Exists ? Task.FromResult<Either<FileError, long>>(((DateTimeOffset)fileInfo.LastWriteTime).ToUnixTimeMilliseconds()) : Task.FromResult<Either<FileError, long>>(new FileNotFoundError(path));
+            return fileInfo.Exists ? Task.FromResult<Either<FileError, long>>(((DateTimeOffset)fileInfo.LastWriteTime).ToUnixTimeMilliseconds()) : Task.FromResult<Either<FileError, long>>(new FileNotFoundByPathError(path));
         }
         catch (UnauthorizedAccessException ex)
         {

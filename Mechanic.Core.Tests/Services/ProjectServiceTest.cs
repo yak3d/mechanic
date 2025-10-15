@@ -11,17 +11,16 @@ namespace Mechanic.Core.Tests.Services;
 public class ProjectServiceTest
 {
     private const string TestGamePath = @"C:\Program Files (x86)\Steam\steamapps\common\Mechanic\Mechanic.exe";
-    private readonly Mock<ILogger<ProjectService>> _mockLogger;
-    private readonly Mock<IFileService> _mockFileService;
-    private readonly Mock<IProjectRepository> _mockProjectRepository;
-    private readonly ProjectService _projectService;
+    private readonly Mock<IProjectRepository> mockProjectRepository;
+    private readonly ProjectService projectService;
+    private const string TestSourcePath = "./Source";
 
     public ProjectServiceTest()
     {
-        _mockLogger = new Mock<ILogger<ProjectService>>();
-        _mockFileService = new Mock<IFileService>();
-        _mockProjectRepository = new Mock<IProjectRepository>();
-        _projectService = new ProjectService(_mockLogger.Object, _mockFileService.Object, _mockProjectRepository.Object);
+        Mock<ILogger<ProjectService>> mockLogger = new();
+        Mock<IFileService> mockFileService = new();
+        this.mockProjectRepository = new Mock<IProjectRepository>();
+        this.projectService = new ProjectService(mockLogger.Object, mockFileService.Object, this.mockProjectRepository.Object, TestSourcePath);
     }
 
     [Fact]
@@ -32,8 +31,8 @@ public class ProjectServiceTest
         var game = GameName.SkyrimSpecialEdition;
         var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default));
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        this.mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default));
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = projectId,
             GameName = game,
@@ -42,7 +41,7 @@ public class ProjectServiceTest
             Namespace = "TEST"
         })!);
 
-        var result = await _projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []);
+        var result = await this.projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(projectId);
@@ -51,8 +50,8 @@ public class ProjectServiceTest
         result.GameFiles.ShouldBeEmpty();
         result.SourceFiles.ShouldBeEmpty();
 
-        _mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, It.IsAny<List<SourceFile>>(), It.IsAny<List<GameFile>>()), Times.Once);
-        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, It.IsAny<List<SourceFile>>(), It.IsAny<List<GameFile>>()), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
     }
 
     [Fact]
@@ -63,15 +62,15 @@ public class ProjectServiceTest
         var game = GameName.SkyrimSpecialEdition;
         var settings = new ProjectSettingsBuilder().EnablePyro().Build();
 
-        _mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default)).Throws<InvalidOperationException>();
+        this.mockProjectRepository.Setup(repo => repo.InitializeProjectAsync(projectId, "TEST", game, settings, TestGamePath, default, default)).Throws<InvalidOperationException>();
 
-        await _projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []).ShouldThrowAsync<InvalidOperationException>();
+        await this.projectService.InitializeAsync(path, projectId, "TEST", game, settings, TestGamePath, [], []).ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
     public async Task ProjectService_GetCurrentProjectAsync_ReturnsProject()
     {
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(new MechanicProject
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
@@ -81,7 +80,7 @@ public class ProjectServiceTest
             Namespace = "TEST"
         })!);
 
-        var result = await _projectService.GetCurrentProjectAsync();
+        var result = await this.projectService.GetCurrentProjectAsync();
         result.ShouldNotBeNull();
         result.Id.ShouldBe("com.example.MyProject");
         result.GameName.ShouldBe(GameName.SkyrimSpecialEdition);
@@ -91,15 +90,15 @@ public class ProjectServiceTest
     [Fact]
     public async Task ProjectService_GetCurrentProjectAsync_ThrowsWhenProjectDoesntExist()
     {
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult<MechanicProject?>(null));
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult<MechanicProject?>(null));
 
-        await _projectService.GetCurrentProjectAsync().ShouldThrowAsync<InvalidOperationException>();
+        await this.projectService.GetCurrentProjectAsync().ShouldThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
     public async Task ProjectService_UpdateProjectGameAsync_UpdatesProjectGame()
     {
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(result: new MechanicProject
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(result: new MechanicProject
         {
             Id = "com.example.MyProject",
             GameName = GameName.SkyrimSpecialEdition,
@@ -109,11 +108,11 @@ public class ProjectServiceTest
             Namespace = "TEST"
         })!);
 
-        var result = await _projectService.UpdateProjectGameAsync(GameName.Starfield);
+        var result = await this.projectService.UpdateProjectGameAsync(GameName.Starfield);
         result.GameName.ShouldBe(GameName.Starfield);
 
-        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
-        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(result), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(result), Times.Once);
     }
 
     [Fact]
@@ -128,25 +127,25 @@ public class ProjectServiceTest
             GamePath = TestGamePath,
             Namespace = "TEST"
         };
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
-        var pathToFileTiff = "path/to/file.tiff";
+        var pathToFileTiff = "./Source/path/to/file.tiff";
         var sourceFileType = SourceFileType.Tiff;
 
-        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType);
+        var result = await this.projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType);
 
         result.Match(
             Right: file =>
             {
                 file.ShouldNotBeNull();
-                file.Path.ShouldBe(pathToFileTiff);
+                file.Path.ShouldBe(@"path\to\file.tiff");
                 file.FileType.ShouldBe(sourceFileType);
             },
             Left: error => throw new ShouldAssertException($"Expected success but got failure {error}")
         );
 
-        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
-        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
     }
 
     [Fact]
@@ -171,25 +170,25 @@ public class ProjectServiceTest
             ],
             Namespace = "TEST"
         };
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
-        var pathToFileTiff = "path/to/file.tiff";
+        var pathToFileTiff = "./Source/path/to/file.tiff";
         var sourceFileType = SourceFileType.Tiff;
 
-        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, existingGameFileId);
+        var result = await this.projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, existingGameFileId);
 
         result.Match(
             Right: file =>
             {
                 file.ShouldNotBeNull();
-                file.Path.ShouldBe(pathToFileTiff);
+                file.Path.ShouldBe(@"path\to\file.tiff");
                 file.FileType.ShouldBe(sourceFileType);
             },
             Left: error => throw new ShouldAssertException($"Expected success but got failure {error}")
         );
 
-        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
-        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Once);
     }
 
     [Fact]
@@ -213,20 +212,19 @@ public class ProjectServiceTest
             ],
             Namespace = "TEST"
         };
-        _mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
+        this.mockProjectRepository.Setup(repo => repo.GetCurrentProjectAsync()).Returns(Task.FromResult(mechanicProject)!);
 
         var pathToFileTiff = "path/to/file.tiff";
         var sourceFileType = SourceFileType.Tiff;
 
-        var result = await _projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, new Guid());
+        var result = await this.projectService.AddSourceFileAsync(pathToFileTiff, sourceFileType, new Guid());
 
-        // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-        result.Match(
-            Right: file => throw new ShouldAssertException($"Expected failure, but was successful"),
+        Assert.IsType<LinkedFileDoesNotExistError>(result.Match(
+            Right: _ => throw new ShouldAssertException("Expected failure, but was successful"),
             Left: error => error.ShouldBeOfType<LinkedFileDoesNotExistError>()
-        );
+        ));
 
-        _mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
-        _mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Never);
+        this.mockProjectRepository.Verify(repo => repo.GetCurrentProjectAsync(), Times.Once);
+        this.mockProjectRepository.Verify(repo => repo.SaveCurrentProjectAsync(mechanicProject), Times.Never);
     }
 }

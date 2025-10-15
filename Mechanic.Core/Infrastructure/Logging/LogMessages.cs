@@ -71,4 +71,25 @@ public static partial class LogMessages
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Writing project file to {FilePath}")]
     public static partial void WritingProjectFile(this ILogger logger, string filePath);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "FileWatcher registered subscriber with class {clazz}: {subscriber}")]
+    public static partial void FileWatcherRegisteredSubscriber(this ILogger logger, string clazz, object subscriber);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "FileEventHandler registered subscriber with class {clazz}: {subscriber}")]
+    public static partial void FileEventHandlerRegisteredSubscriber(this ILogger logger, string clazz, object subscriber);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "There was an error when watching a file")]
+    public static partial void ErrorWatchingFile(this ILogger logger, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Watching source files in {Path}")]
+    public static partial void WatchingSourceFile(this ILogger logger, string path);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Watching game files in {Path}")]
+    public static partial void WatchingGameFile(this ILogger logger, string path);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "File watcher detected {EventType} for file {FilePath}")]
+    public static partial void FileWatcherDetected(this ILogger logger, string eventType, string filePath);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Received file event for [{EventType}] {FilePath}")]
+    public static partial void ReceivedFileEvent(this ILogger logger, string eventType, string filePath);
 }

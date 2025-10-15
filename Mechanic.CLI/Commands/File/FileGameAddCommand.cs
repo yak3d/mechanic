@@ -3,13 +3,18 @@ using Mechanic.CLI.Infrastructure.Logging;
 using Mechanic.CLI.Models;
 using Mechanic.CLI.Utils;
 using Mechanic.Core.Contracts;
+using Mechanic.Core.Utils;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace Mechanic.CLI.Commands.File;
 
-public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectService projectService) : AsyncCommand<FileGameAddCommand.Settings>
+public class FileGameAddCommand(
+    ILogger<FileGameAddCommand> logger,
+    IProjectService projectService,
+    CommonFilePrompts commonFilePrompts
+    ) : AsyncCommand<FileGameAddCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -21,7 +26,7 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
             "The type of file to add. If not specified, Mechanic will attempt to figure it out by file extension.")]
         [CommandOption("-t|--type")]
         public string? Type { get; init; }
-        
+
         [Description("The Mechanic ID of the [green]source file[/] it points to.")]
         [CommandOption("-g|--game-file")]
         public string? SourceFile { get; init; }
@@ -45,22 +50,11 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
         var fileType = string.IsNullOrEmpty(settings.Type)
             ? AssumeFileType(settings.GamePath)
             : Enum.Parse<GameFileType>(settings.Type, true);
-        
+
         SourceFile? selectedSourceFile = null;
         if (settings.SourceFile == null)
         {
-            var similarSourceFiles = (await FindSimilarSourceFile(settings.GamePath)).ToList();
-            if (similarSourceFiles.Count != 0)
-            {
-                var choice = PromptForPossibleSourceFiles(settings, similarSourceFiles);
-
-                selectedSourceFile = choice switch
-                {
-                    AllPromptsChoice => ((FilePrompts.ProjectFileChoice)await PromptForAllSourceFiles()).File as SourceFile,
-                    FilePrompts.ProjectFileChoice sourceFileChoice => sourceFileChoice.File as SourceFile,
-                    _ => selectedSourceFile
-                };
-            }
+            selectedSourceFile = await commonFilePrompts.FindOrPromptForMatchingSourceFile(settings.GamePath);
         }
         else
         {
@@ -72,7 +66,7 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
             }
         }
 
-        var result = await projectService.AddGameFileAsync( 
+        var result = await projectService.AddGameFileAsync(
             settings.GamePath,
             fileType.ToDomain(),
             selectedSourceFile?.Id);
@@ -95,32 +89,6 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
         );
     }
 
-    private PromptChoice PromptForPossibleSourceFiles(Settings settings, List<SourceFile> sourceFiles)
-    {
-        var title =
-            $"Found existing [green]source files[/] that may match this [magenta]game file[/]: {settings.GamePath}";
-        return FilePrompts.PromptForSourceFileAsPromptChoice(
-            title,
-            "Matching Source Files",
-            sourceFiles,
-            new AllPromptsChoice()
-        );
-    }
-
-    private async Task<IEnumerable<SourceFile>> FindSimilarSourceFile(string gameFilePath)
-    {
-        var sourceFiles = (await projectService.GetCurrentProjectAsync()).SourceFiles.Select(SourceFile.FromDomain);
-        var gameFile = Path.GetFileNameWithoutExtension(gameFilePath);
-        return ProjectFileFuzzyMatcher.FuzzyMatch(sourceFiles, gameFile)
-            .Select(file => file.File);
-    }
-
-    private async Task<PromptChoice> PromptForAllSourceFiles()
-    {
-        var allSourceFiles = (await projectService.GetCurrentProjectAsync()).SourceFiles.Select(SourceFile.FromDomain);
-        return FilePrompts.PromptForSourceFileAsPromptChoice("All source files", "Source Files", allSourceFiles);
-    }
-
     private GameFileType AssumeFileType(string file)
     {
         var gameFileType = Path.GetExtension(file).ToLowerInvariant() switch
@@ -133,7 +101,7 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
         };
 
         logger.AssumingGameFileType(gameFileType, Path.GetExtension(file));
-        
+
         if (gameFileType == GameFileType.Other)
         {
             logger.FileTypeSetToOther();
@@ -141,9 +109,4 @@ public class FileGameAddCommand(ILogger<FileGameAddCommand> logger, IProjectServ
 
         return gameFileType;
     }
-
-    private record PromptFileChoiceHeader() : PromptChoice("Source Files");
-
-    private record AllPromptsChoice() : PromptChoice("Choose from all source files");
-    private record PromptFileChoice(SourceFile SourceFile) : PromptChoice($"{SourceFile.Path} ({SourceFile.Id})");
 }

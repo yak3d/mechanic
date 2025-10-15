@@ -7,12 +7,14 @@ using Mechanic.Core.Contracts;
 using Mechanic.Core.Models;
 using Microsoft.Extensions.Logging;
 using Repositories.Exceptions;
+using Utils;
 using static LanguageExt.Prelude;
 
 public class ProjectService(
     ILogger<ProjectService> logger,
     IFileService fileService,
-    IProjectRepository projectRepository) : IProjectService
+    IProjectRepository projectRepository,
+    string sourcePath) : IProjectService
 {
     public async Task<MechanicProject> InitializeAsync(string path,
         string projectId,
@@ -66,7 +68,8 @@ public class ProjectService(
             return Left<SourceFileAddError, SourceFile>(new LinkedFileDoesNotExistError { LinkedFileId = id.Value });
         }
 
-        var sourceFile = project.AddSourceFile(path, fileType, id);
+        var relPath = Path.GetRelativePath(sourcePath, path);
+        var sourceFile = project.AddSourceFile(relPath, fileType, id);
         await projectRepository.SaveCurrentProjectAsync(project);
 
         return sourceFile;
@@ -76,7 +79,8 @@ public class ProjectService(
     {
         try
         {
-            return await projectRepository.RemoveSourceFileByPathAsync(path);
+            var relPath = Path.GetRelativePath(sourcePath, path);
+            return await projectRepository.RemoveSourceFileByPathAsync(relPath);
         }
         catch (ProjectSourceFileNotFoundException)
         {
@@ -166,6 +170,16 @@ public class ProjectService(
             return projectResult != null && Enumerable.Any(projectResult.GameFiles, gameFile => gameFile.Path == path);
         });
 
+    public async Task<bool> FileExistsWithPathAsync(string path) => await projectRepository.GetCurrentProjectAsync().ContinueWith(
+        project =>
+        {
+            var projectResult = project.Result;
+
+            return projectResult != null && projectResult.GameFiles.Select(f => f.Path)
+                .Concat(projectResult.SourceFiles.Select(f => f.Path))
+                .Any(filePath => filePath == path);
+        });
+
     public Task<Either<CheckError, Dictionary<SourceFile, bool>>> CheckSourceFilesAsync<T>() => throw new NotImplementedException();
 
     public async Task<Either<ProjectError, Dictionary<SourceFile, FileCheckStatus>>> CheckSourceFilesAsync()
@@ -182,6 +196,76 @@ public class ProjectService(
         var files = project.GameFiles;
 
         return await this.CheckFileExistence(files);
+    }
+
+    public async Task<Either<ProjectError, ProjectFile>> ChangeSourceFilePath(string oldPath, string newPath)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var file = project.GetSourceFile(oldPath);
+
+        if (file != null)
+        {
+            return project.SetSourceFilePath(file.Id, newPath);
+        }
+
+        return new FileNotFoundByPathError(oldPath);
+    }
+
+    public async Task<Either<ProjectError, ProjectFile>> ChangeSourceFilePath(Guid fileId, string newPath)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        try
+        {
+            return project.SetSourceFilePath(fileId, newPath);
+        }
+        catch (ProjectSourceFileNotFoundException)
+        {
+            return new FileNotByIdFoundError(fileId);
+        }
+    }
+
+    public async Task<Either<ProjectError, ProjectFile>> ChangeGameFilePath(string oldPath, string newPath)
+    {
+        var project = await this.GetCurrentProjectAsync();
+        var file = project.GetGameFile(oldPath);
+
+        if (file != null)
+        {
+            return project.SetGameFilePath(file.Id, newPath);
+        }
+
+        return new FileNotFoundByPathError(oldPath);
+    }
+
+    public async Task<Either<ProjectError, ProjectFile>> ChangeGameFilePath(Guid fileId, string newPath)
+    {
+        var project = await this.GetCurrentProjectAsync();
+
+        try
+        {
+            return project.SetGameFilePath(fileId, newPath);
+        }
+        catch (ProjectGameFileNotFoundException)
+        {
+            return new FileNotByIdFoundError(fileId);
+        }
+    }
+
+    public async Task<IEnumerable<GameFile>> FindSimilarGameFile(string sourceFilePath)
+    {
+        var gameFiles = (await this.GetCurrentProjectAsync()).GameFiles;
+        var sourceFile = Path.GetFileNameWithoutExtension(sourceFilePath);
+
+        return ProjectFileFuzzyMatcher.FuzzyMatch(gameFiles, sourceFile).Select(file => file.File);
+    }
+
+    public async Task<IEnumerable<SourceFile>> FindSimilarSourceFile(string gameFilePath)
+    {
+        var gameFiles = (await this.GetCurrentProjectAsync()).SourceFiles;
+        var sourceFile = Path.GetFileNameWithoutExtension(gameFilePath);
+
+        return ProjectFileFuzzyMatcher.FuzzyMatch(gameFiles, sourceFile).Select(file => file.File);
     }
 
     private async Task<Either<ProjectError, Dictionary<T, FileCheckStatus>>> CheckFileExistence<T>(IEnumerable<T> files) where T : ProjectFile

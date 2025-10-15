@@ -45,6 +45,25 @@ public interface IProjectService
     public Task<SourceFile?> FindSourceFileByIdAsync(Guid id);
     public Task<bool> SourceFileExistsWithPathAsync(string path);
     public Task<bool> GameFileExistsWithPathAsync(string path);
+    public Task<bool> FileExistsWithPathAsync(string path);
     public Task<Either<ProjectError, Dictionary<SourceFile, FileCheckStatus>>> CheckSourceFilesAsync();
     public Task<Either<ProjectError, Dictionary<GameFile, FileCheckStatus>>> CheckGameFilesAsync();
+    public Task<Either<ProjectError, ProjectFile>> ChangeSourceFilePath(string oldPath, string newPath);
+    public Task<Either<ProjectError, ProjectFile>> ChangeSourceFilePath(Guid fileId, string newPath);
+    public Task<Either<ProjectError, ProjectFile>> ChangeGameFilePath(string oldPath, string newPath);
+    public Task<Either<ProjectError, ProjectFile>> ChangeGameFilePath(Guid fileId, string newPath);
+    /// <summary>
+    /// Finds a <c cref="GameFile">GameFile</c> that is likely linked to the given <c>sourceFilePath</c>. It does this by
+    /// matching the name without the extension. It then returns the best matches.
+    /// </summary>
+    /// <param name="sourceFilePath">The path to the source file to find the similar game file for</param>
+    /// <returns>An <c cref="IEnumerable{T}">IEnumerable</c> of matching <c cref="GameFile">GameFile</c>.</returns>
+    public Task<IEnumerable<GameFile>> FindSimilarGameFile(string sourceFilePath);
+    /// <summary>
+    /// Finds a <c cref="SourceFile">SourceFile</c> that is likely linked to the given <c>sourceFilePath</c>. It does this by
+    /// matching the name without the extension. It then returns the best matches.
+    /// </summary>
+    /// <param name="gameFilePath">The path to the source file to find the similar game file for</param>
+    /// <returns>An <c cref="IEnumerable{T}">IEnumerable</c> of matching <c cref="SourceFile">SourceFile</c>.</returns>
+    public Task<IEnumerable<SourceFile>> FindSimilarSourceFile(string gameFilePath);
 }

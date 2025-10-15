@@ -124,6 +124,9 @@ dotnet_style_prefer_is_null_check_over_reference_equality_method = true:warning
 dotnet_style_operator_placement_when_wrapping = end_of_line:warning
 csharp_style_prefer_null_check_over_type_check = true:warning
 
+# identifiers
+dotnet_diagnostic.CA1711.severity = none
+
 # C# Style Rules
 # https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/language-rules#c-style-rules
 [*.{cs,csx,cake}]
@@ -448,3 +451,6 @@ dotnet_naming_rule.parameters_rule.severity             = warning
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 ##########################################
+
+[{*Test.cs,*Tests.cs}]
+dotnet_diagnostic.CA1707.severity = none

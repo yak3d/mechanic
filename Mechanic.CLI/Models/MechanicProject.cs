@@ -3,23 +3,23 @@ namespace Mechanic.CLI.Models;
 
 public class MechanicProject
 {
-    private GameName _gameName;
+    private readonly GameName gameName;
 
     public required string Id { get; init; }
     public required string Namespace { get; init; }
 
-    public required CLI.Models.GameName GameName
+    public required GameName GameName
     {
-        get => this._gameName;
-        init => this._gameName = value;
+        get => this.gameName;
+        init => this.gameName = value;
     }
-    
-    public required ProjectSettings ProjectSettings { get; init; }
+
+    public required ProjectSettings? ProjectSettings { get; init; }
 
     public required string GamePath { get; init; }
 
     public List<SourceFile> SourceFiles { get; private init; } = [];
-    public List<CLI.Models.GameFile> GameFiles { get; init; } = [];
+    public List<GameFile> GameFiles { get; init; } = [];
 
     public SourceFile AddSourceFile(string path, SourceFileType fileType)
     {
@@ -40,31 +40,27 @@ public class MechanicProject
 
         return sourceFile;
     }
-    public Core.Models.MechanicProject ToDomain()
-    {
-        return new Core.Models.MechanicProject
+    public Core.Models.MechanicProject ToDomain() =>
+        new()
         {
-            Id = Id,
-            Namespace = Namespace,
-            GameName = GameName.ToDomain(),
-            GamePath = GamePath,
-            ProjectSettings = ProjectSettings.ToDomain(),
-            SourceFiles = [.. SourceFiles.Select(sf => sf.ToDomain())],
-            GameFiles = [.. GameFiles.Select(df => df.ToDomain())]
+            Id = this.Id,
+            Namespace = this.Namespace,
+            GameName = this.GameName.ToDomain(),
+            GamePath = this.GamePath,
+            ProjectSettings = this.ProjectSettings?.ToDomain(),
+            SourceFiles = [.. this.SourceFiles.Select(sf => sf.ToDomain())],
+            GameFiles = [.. this.GameFiles.Select(df => df.ToDomain())]
         };
-    }
 
-    public static MechanicProject FromDomain(Core.Models.MechanicProject domainProject)
-    {
-        return new MechanicProject
+    public static MechanicProject FromDomain(Core.Models.MechanicProject domainProject) =>
+        new()
         {
             Id = domainProject.Id,
             Namespace = domainProject.Namespace,
             GameName = domainProject.GameName.FromDomain(),
             GamePath = domainProject.GamePath,
-            ProjectSettings = domainProject.ProjectSettings.ToCliModel(),
+            ProjectSettings = domainProject.ProjectSettings?.ToCliModel(),
             SourceFiles = [.. domainProject.SourceFiles.Select(SourceFile.FromDomain)],
             GameFiles = [.. domainProject.GameFiles.Select(GameFile.FromDomain)]
         };
-    }
 }

@@ -50,7 +50,7 @@ try
     await File.WriteAllTextAsync(outputFile, code);
     Console.WriteLine($"✅ Successfully generated classes to: {outputFile}");
 
-    var pyroCodeGen = new PyroSchemaCodeGenTask(Path.GetDirectoryName(outputFile));
+    var pyroCodeGen = new PyroSchemaCodeGenTask(Path.GetDirectoryName(outputFile) ?? throw new InvalidOperationException());
     await pyroCodeGen.GenerateSchemaCode();
 
     return 0;

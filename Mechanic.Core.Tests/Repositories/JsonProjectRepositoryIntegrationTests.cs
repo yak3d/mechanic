@@ -174,7 +174,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ProjectSettings = new ProjectSettingsBuilder().EnablePyro()
                 .Build(),
             GamePath = TestGamePath,
-            Namespace = "SECOND" 
+            Namespace = "SECOND"
         };
 
         await _repository.SaveCurrentProjectAsync(firstProject);
@@ -298,17 +298,17 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveSourceFileByIdAsync(fileId);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(fileId);
         resultProject.ShouldNotBeNull();
         resultProject.SourceFiles.Count.ShouldBe(0);
     }
-    
+
     [Fact]
     public async Task RemoveSourceFileByPath_RemovesFileSuccessfully()
     {
@@ -332,24 +332,24 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveSourceFileByIdAsync(fileId);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(fileId);
         result.Path.ShouldBe(testPathTestTiff);
         resultProject.ShouldNotBeNull();
         resultProject.SourceFiles.Count.ShouldBe(0);
     }
-    
+
     [Fact]
     public async Task RemoveSourceFileById_WithEmptyProject_ThrowsException()
     {
         await Should.ThrowAsync<ProjectNotFoundException>(_repository.RemoveSourceFileByIdAsync(new Guid()));
     }
-    
+
     [Fact]
     public async Task RemoveSourceFileById_WithFileNotExisting_ThrowsException()
     {
@@ -372,11 +372,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         await Should.ThrowAsync<ProjectSourceFileNotFoundException>(_repository.RemoveSourceFileByIdAsync(new Guid()));
     }
-    
+
     [Fact]
     public async Task RemoveSourceFileByPath_WithFileNotExisting_ThrowsException()
     {
@@ -397,13 +397,13 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
                     FileType = SourceFileType.Tiff
                 }
             ],
-            Namespace = "TEST" 
+            Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         await Should.ThrowAsync<ProjectSourceFileNotFoundException>(_repository.RemoveSourceFileByPathAsync("broken path"));
     }
-    
+
     [Fact]
     public async Task RemoveGameFileById_RemovesFileSuccessfully()
     {
@@ -426,17 +426,17 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(gameFileId);
         resultProject.ShouldNotBeNull();
         resultProject.GameFiles.Count.ShouldBe(0);
     }
-    
+
     [Fact]
     public async Task RemoveGameFileByPath_RemovesFileSuccessfully()
     {
@@ -460,25 +460,25 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveGameFileByPathAsync(testPathTestDds);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(gameFileId);
         result.Path.ShouldBe(testPathTestDds);
         resultProject.ShouldNotBeNull();
         resultProject.GameFiles.Count.ShouldBe(0);
     }
-    
+
     [Fact]
     public async Task RemoveGameFileById_RemovesLinkedSourceFiles()
     {
         var gameFileId = Guid.NewGuid();
         var sourceFileId = Guid.NewGuid();
         var unlinkedSourceFileId = Guid.NewGuid();
-        
+
         var project = new MechanicProject
         {
             Id = "integration-test-project",
@@ -514,11 +514,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(gameFileId);
         resultProject.ShouldNotBeNull();
@@ -526,7 +526,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         resultProject.SourceFiles.Count.ShouldBe(1);
         resultProject.SourceFiles[0].Id.ShouldBe(unlinkedSourceFileId);
     }
-    
+
     [Fact]
     public async Task RemoveGameFileByPath_RemovesLinkedSourceFiles()
     {
@@ -534,7 +534,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var sourceFileId = Guid.NewGuid();
         var unlinkedSourceFileId = Guid.NewGuid();
         var gameFilePath = "test\\audio\\music.wem";
-        
+
         var project = new MechanicProject
         {
             Id = "integration-test-project",
@@ -570,11 +570,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveGameFileByPathAsync(gameFilePath);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(gameFileId);
         result.Path.ShouldBe(gameFilePath);
@@ -583,7 +583,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         resultProject.SourceFiles.Count.ShouldBe(1);
         resultProject.SourceFiles[0].Id.ShouldBe(unlinkedSourceFileId);
     }
-    
+
     [Fact]
     public async Task RemoveGameFileById_RemovesMultipleLinkedSourceFiles()
     {
@@ -591,7 +591,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         var sourceFileId1 = Guid.NewGuid();
         var sourceFileId2 = Guid.NewGuid();
         var sourceFileId3 = Guid.NewGuid();
-        
+
         var project = new MechanicProject
         {
             Id = "integration-test-project",
@@ -634,11 +634,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         var result = await _repository.RemoveGameFileByIdAsync(gameFileId);
         var resultProject = await _repository.GetCurrentProjectAsync();
-        
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(gameFileId);
         resultProject.ShouldNotBeNull();
@@ -646,13 +646,13 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
         resultProject.SourceFiles.Count.ShouldBe(1);
         resultProject.SourceFiles[0].Id.ShouldBe(sourceFileId3);
     }
-    
+
     [Fact]
     public async Task RemoveGameFileById_WithEmptyProject_ThrowsException()
     {
         await Should.ThrowAsync<ProjectNotFoundException>(_repository.RemoveGameFileByIdAsync(new Guid()));
     }
-    
+
     [Fact]
     public async Task RemoveGameFileById_WithFileNotExisting_ThrowsException()
     {
@@ -675,11 +675,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         await Should.ThrowAsync<ProjectGameFileNotFoundException>(_repository.RemoveGameFileByIdAsync(new Guid()));
     }
-    
+
     [Fact]
     public async Task RemoveGameFileByPath_WithFileNotExisting_ThrowsException()
     {
@@ -702,11 +702,11 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
             ],
             Namespace = "TEST"
         };
-        
+
         await _repository.SaveCurrentProjectAsync(project);
         await Should.ThrowAsync<ProjectGameFileNotFoundException>(_repository.RemoveGameFileByPathAsync("nonexistent\\path"));
     }
-    
+
     [Fact]
     public async Task RemoveGameFileByPath_WithEmptyProject_ThrowsException()
     {
@@ -715,6 +715,7 @@ public class JsonProjectRepositoryIntegrationTests : IDisposable
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         if (Directory.Exists(_testDirectory))
         {
             Directory.Delete(_testDirectory, recursive: true);

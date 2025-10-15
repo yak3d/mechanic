@@ -1,23 +1,17 @@
 ﻿using System.ComponentModel;
-using FuzzySharp;
 using Mechanic.CLI.Infrastructure.Logging;
 using Mechanic.CLI.Models;
-using Mechanic.CLI.Utils;
 using Mechanic.Core.Contracts;
-using Mechanic.Core.Models;
-using Mechanic.Core.Services;
 using Mechanic.Core.Services.Errors;
 using Microsoft.Extensions.Logging;
-using Serilog.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using GameFile = Mechanic.CLI.Models.GameFile;
-using GameFileType = Mechanic.CLI.Models.GameFileType;
 using SourceFileType = Mechanic.CLI.Models.SourceFileType;
 
 namespace Mechanic.CLI.Commands.File;
 
-public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectService projectService) : AsyncCommand<FileSrcAddCommand.Settings>
+public class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProjectService projectService, CommonFilePrompts commonFilePrompts) : AsyncCommand<FileSrcAddCommand.Settings>
 {
     public sealed class Settings : CommandSettings
     {
@@ -35,17 +29,10 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
         public string? GameFile { get; init; }
     }
 
-    private record PromptFileChoiceHeader() : PromptChoice("Game Files");
-
-    private record ActionsChoiceHeader() : PromptChoice("If none match:");
-    private record CancelChoice() : PromptChoice("Cancel");
-
-    private record AllPromptsChoice() : PromptChoice("Choose from all game files");
-
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var fileType = string.IsNullOrEmpty(settings.Type)
-            ? AssumeFileType(Path.GetExtension(settings.SourcePath))
+            ? CommonFilePrompts.AssumeOrPromptSourceFileType(Path.GetFileName(settings.SourcePath))
             : Enum.Parse<SourceFileType>(settings.Type);
 
         if (await projectService.SourceFileExistsWithPathAsync(settings.SourcePath))
@@ -57,18 +44,7 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
         GameFile? selectedGameFile = null;
         if (settings.GameFile == null)
         {
-            var similarGameFiles = (await FindSimilarGameFile(settings.SourcePath)).ToList();
-            if (similarGameFiles.Count != 0)
-            {
-                var choice = PromptForPossibleGameFiles(settings, similarGameFiles);
-
-                selectedGameFile = choice switch
-                {
-                    AllPromptsChoice => ((FilePrompts.ProjectFileChoice) await PromptForAllGameFiles()).File as GameFile,
-                    FilePrompts.ProjectFileChoice gameFileChoice => gameFileChoice.File as GameFile,
-                    _ => selectedGameFile
-                };
-            }
+            selectedGameFile = await commonFilePrompts.FindOrPromptForMatchingGameFile(settings.SourcePath);
         }
         else
         {
@@ -113,48 +89,9 @@ public partial class FileSrcAddCommand(ILogger<FileSrcAddCommand> logger, IProje
             });
     }
 
-    private PromptChoice PromptForPossibleGameFiles(Settings settings, List<GameFile> similarGameFiles)
-    {
-        var chosenGame = FilePrompts.PromptForGameFileAsPromptChoice(
-            $"Found existing [purple]game files[/] that may match this [green]source file[/]: {settings.SourcePath}",
-            "Source Files",
-            similarGameFiles,
-            new AllPromptsChoice()
-        );
 
-        return chosenGame;
-    }
-
-    private async Task<PromptChoice> PromptForAllGameFiles()
-    {
-        var allGameFiles = Models.MechanicProject.FromDomain(await projectService.GetCurrentProjectAsync()).GameFiles;
-        return FilePrompts.PromptForGameFileAsPromptChoice("All game files", "Game Files", allGameFiles);
-    }
-
-    public override ValidationResult Validate(CommandContext context, Settings settings)
-    {
-        return string.IsNullOrEmpty(settings.SourcePath)
+    public override ValidationResult Validate(CommandContext context, Settings settings) =>
+        string.IsNullOrEmpty(settings.SourcePath)
             ? ValidationResult.Error("You must enter a [b]source path[/].")
             : ValidationResult.Success();
-    }
-
-    private async Task<IEnumerable<GameFile>> FindSimilarGameFile(string sourceFilePath)
-    {
-        var gameFiles = (await projectService.GetCurrentProjectAsync()).GameFiles.Select(GameFile.FromDomain);
-        var sourceFile = Path.GetFileNameWithoutExtension(sourceFilePath);
-        var bestMatches = ProjectFileFuzzyMatcher.FuzzyMatch(gameFiles, sourceFile)
-            .Select(file => file.File);
-
-        return bestMatches;
-    }
-
-    private static SourceFileType AssumeFileType(string fileExtension) => fileExtension switch
-    {
-        ".fbx" => SourceFileType.Fbx,
-        ".blend" => SourceFileType.Blend,
-        ".tiff" => SourceFileType.Tiff,
-        ".wav" => SourceFileType.Wav,
-        ".psc" => SourceFileType.Psc,
-        _ => SourceFileType.Other
-    };
 }

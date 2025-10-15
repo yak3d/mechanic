@@ -7,7 +7,9 @@ public enum GameFileType
     DirectDrawSurface = 2,
     WwiseEncodedMedia = 3,
     PapyrusExecutable = 4,
-    PapyrusProject = 5
+    PapyrusProject = 5,
+    NetImmerseFile = 6,
+    Mesh = 7,
 }
 
 public static class GameFileTypeExtensions
@@ -20,6 +22,8 @@ public static class GameFileTypeExtensions
         GameFileType.WwiseEncodedMedia => Core.Models.GameFileType.WwiseEncodedMedia,
         GameFileType.PapyrusExecutable => Core.Models.GameFileType.PapyrusExecutable,
         GameFileType.PapyrusProject => Core.Models.GameFileType.PapyrusProject,
+        GameFileType.NetImmerseFile => Core.Models.GameFileType.NetImmerseFile,
+        GameFileType.Mesh => Core.Models.GameFileType.Mesh,
         _ => throw new ArgumentOutOfRangeException(nameof(gameFileType), gameFileType, null)
     };
 
@@ -31,6 +35,8 @@ public static class GameFileTypeExtensions
         Core.Models.GameFileType.WwiseEncodedMedia => GameFileType.WwiseEncodedMedia,
         Core.Models.GameFileType.PapyrusExecutable => GameFileType.PapyrusExecutable,
         Core.Models.GameFileType.PapyrusProject => GameFileType.PapyrusProject,
+        Core.Models.GameFileType.NetImmerseFile => GameFileType.NetImmerseFile,
+        Core.Models.GameFileType.Mesh => GameFileType.Mesh,
         _ => throw new ArgumentOutOfRangeException(nameof(domainGameFileType), domainGameFileType, null)
     };
 }

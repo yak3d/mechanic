@@ -6,6 +6,7 @@ using Mechanic.CLI.Infrastructure.Logging;
 using Mechanic.CLI.Models.Settings;
 using Mechanic.CLI.Services;
 using Mechanic.Core.Contracts;
+using Mechanic.Core.FileHandlers;
 using Mechanic.Core.Repositories;
 using Mechanic.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,27 +15,33 @@ using Serilog.Sinks.SystemConsole.Themes;
 using Spectre.Console.Cli;
 
 var registrations = new ServiceCollection();
+
+#pragma warning disable CA1305
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console(
         outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}",
         theme: AnsiConsoleTheme.Code)
+#pragma warning restore CA1305
     .CreateLogger();
 
 registrations.AddLogging(builder => builder.AddSerilog());
 registrations.AddSingleton<IFileService, FileService>();
 registrations.AddSingleton<IProjectRepository, JsonProjectRepository>();
-registrations.AddSingleton<IProjectService, ProjectService>();
+registrations.AddSingleton<IProjectService, ProjectService>(service => ActivatorUtilities.CreateInstance<ProjectService>(service, Directory.GetCurrentDirectory()));
 registrations.AddSingleton<IOSService, OSService>();
 registrations.AddSingleton<ILocalSettingsService, JsonLocalSettingsService>();
 registrations.AddSingleton<IXmlSerializer, XmlSerializer>();
 registrations.AddSingleton<IPyroService, PyroService>();
+registrations.AddSingleton<IFileEventHandler, DefaultFileEventHandler>();
+registrations.AddSingleton<CommonFilePrompts, CommonFilePrompts>();
 
 if (OperatingSystem.IsWindows())
 {
     registrations.AddSingleton<IRegistryService, RegistryService>();
 }
 registrations.AddSingleton<SteamService, WindowsSteamService>();
+registrations.AddTransient<IFileWatcherBuilder, FileWatcherBuilder>();
 
 var registrar = new TypeRegistrar(registrations);
 
@@ -45,6 +52,7 @@ app.Configure(config =>
     config.AddCommand<ConfigureCommand>("configure");
     config.AddCommand<CheckCommand>("check")
         .WithDescription("Checks the files tracked by the project to see if they exist, and for game files if they exist and are up to date with the source file");
+    config.AddCommand<WatchCommand>("watch");
     config.AddBranch("file", file =>
     {
         file.SetDescription("Allows you to add, list, remove files tracked by Mechanic.");

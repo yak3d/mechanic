@@ -35,7 +35,7 @@ public class GameFileTypeTest
     {
         var defaultValue = default(GameFilesFileType);
 
-        if (Enum.IsDefined(typeof(GameFilesFileType), defaultValue))
+        if (Enum.IsDefined(defaultValue))
         {
             Should.NotThrow(() => defaultValue.ToGameFileType());
         }

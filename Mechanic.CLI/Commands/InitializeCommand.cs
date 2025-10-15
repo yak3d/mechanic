@@ -11,7 +11,6 @@ using Spectre.Console.Cli;
 using GameFile = Mechanic.CLI.Models.GameFile;
 using GameFileType = Mechanic.CLI.Models.GameFileType;
 using GameName = Mechanic.CLI.Models.GameName;
-using SourceFile = Mechanic.CLI.Models.SourceFile;
 
 namespace Mechanic.CLI.Commands;
 
@@ -23,7 +22,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         [Description("The project ID in reverse DNS order.")]
         [CommandOption("-i|--project-id")]
         public string? ProjectId { get; init; }
-        
+
         [Description("The namespace for the project.")]
         [CommandOption("-n|--namespace")]
         public string? Namespace { get; init; }
@@ -35,18 +34,16 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         [Description("The path to the game the mod project is for.")]
         [CommandOption("-p|--game-path")]
         public string? GamePath { get; init; }
-        
+
         [Description("Enable support for Pyro Papyrus compilation. This requires Pyro to be specified in the global config. Run `configure` if you want to specify the path to Pyro")]
         [CommandOption("--enable-pyro")]
         public bool EnablePyro { get; init; }
 
-        public override ValidationResult Validate()
-        {
-            return GameName != null && Enum.TryParse<GameName>(GameName, out _)
+        public override ValidationResult Validate() =>
+            this.GameName != null && Enum.TryParse<GameName>(this.GameName, out _)
                 ? ValidationResult.Error(
                     $"Game must be one of the valid games: {string.Join(",", Enum.GetNames<GameName>())}")
                 : ValidationResult.Success();
-        }
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -57,15 +54,14 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
         var gameName = settings.GameName == null ? PromptForGame() : Enum.Parse<GameName>(settings.GameName);
         var projectSettingsBuilder = new ProjectSettingsBuilder();
 
-        var gamePath = settings.GamePath ?? await PromptForGamePath();
-        var sourceFiles = new List<SourceFile>();
+        var gamePath = settings.GamePath ?? await this.PromptForGamePath();
         var gameFiles = new List<GameFile>();
 
         if (settings.EnablePyro)
         {
             var usePyroInPath =
                 await localSettingsService.ReadSettingAsync<bool>(LocalSettingsOptions.SettingUsePyroInPath);
-            
+
 
             if (!usePyroInPath)
             {
@@ -99,7 +95,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
             gameName.ToDomain(),
             projectSettingsBuilder.Build(),
             gamePath,
-            sourceFiles.Select(file => file.ToDomain()).ToList(),
+            [],
             gameFiles.Select(file => file.ToDomain()).ToList()
         );
 
@@ -129,7 +125,7 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
 
                 if (choice is SteamGameChoice steamGameChoice)
                 {
-                    return steamGameChoice.game.FullPath;
+                    return steamGameChoice.Game.FullPath;
                 }
 
                 return PromptForGamePathText();
@@ -137,27 +133,22 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
             Left: _ => PromptForGamePathText());
     }
 
-    private static string PromptForGamePathText()
-    {
-        return AnsiConsole.Prompt(
+    private static string PromptForGamePathText() =>
+        AnsiConsole.Prompt(
             new TextPrompt<string>(
                 "Enter the path to the root game directory:"
             )
         );
-    }
 
-    private string PromptForProjectId()
-    {
-        return AnsiConsole.Prompt(
+    private static string PromptForProjectId() =>
+        AnsiConsole.Prompt(
             new TextPrompt<string>(
                 "Enter a project ID in reverse DNS format. [dim]For example: com.example.MyProject[/]:"
-                )
-            );
-    }
+            )
+        );
 
-    private GameName PromptForGame()
-    {
-        return AnsiConsole.Prompt(
+    private static GameName PromptForGame() =>
+        AnsiConsole.Prompt(
             new SelectionPrompt<GameName>()
                 .Title("Which game is this project for?")
                 .PageSize(10)
@@ -165,12 +156,11 @@ public class InitializeCommand(IProjectService projectService, SteamService stea
                 .AddChoices(Enum.GetValues<GameName>())
                 .UseConverter(game => game.GetDisplayName())
         );
-    }
 
-    private record SteamGameChoiceHeader() : PromptChoice("Installed Steam Games");
+    private sealed record SteamGameChoiceHeader() : PromptChoice("Installed Steam Games");
 
-    private record SteamGameChoice(SteamGame game) : PromptChoice($"{game.Name} ({game.FullPath})");
+    private sealed record SteamGameChoice(SteamGame Game) : PromptChoice($"{Game.Name} ({Game.FullPath})");
 
-    private record ActionsHeader() : PromptChoice("Actions");
-    private record NoGamesMatchChoice() : PromptChoice("None of these");
+    private sealed record ActionsHeader() : PromptChoice("Actions");
+    private sealed record NoGamesMatchChoice() : PromptChoice("None of these");
 }

@@ -2,6 +2,7 @@ namespace Mechanic.Core.Models;
 
 using Newtonsoft.Json;
 using Project.Models.Json;
+using Repositories.Exceptions;
 
 public class MechanicProject
 {
@@ -69,6 +70,41 @@ public class MechanicProject
         return gameFile;
     }
 
+    public SourceFile? GetSourceFile(Guid fileId) => this.SourceFiles.FirstOrDefault(sf => sf.Id == fileId);
+    public SourceFile? GetSourceFile(string path) => this.SourceFiles.FirstOrDefault(sf => sf.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+    public GameFile? GetGameFile(Guid fileId) => this.GameFiles.FirstOrDefault(sf => sf.Id == fileId);
+    public GameFile? GetGameFile(string path) => this.GameFiles.FirstOrDefault(sf => sf.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+
+    public SourceFile SetSourceFilePath(Guid fileId, string path)
+    {
+        var sourceFile = this.GetSourceFile(fileId);
+
+        if (sourceFile != null)
+        {
+            sourceFile.Path = path;
+            return sourceFile;
+        }
+        else
+        {
+            throw new ProjectSourceFileNotFoundException(FileIdentifier.FromId(fileId));
+        }
+    }
+
+    public GameFile SetGameFilePath(Guid fileId, string path)
+    {
+        var gameFile = this.GetGameFile(fileId);
+
+        if (gameFile != null)
+        {
+            gameFile.Path = path;
+            return gameFile;
+        }
+        else
+        {
+            throw new ProjectGameFileNotFoundException(FileIdentifier.FromId(fileId));
+        }
+    }
+
     public void ChangeGame(GameName newGameName) => this.gameName = newGameName;
 
     public Mechanic.Core.Project.Models.Json.MechanicProject ToJson() => new()
@@ -92,7 +128,7 @@ public class MechanicProject
         GameName = jsonObject.Game.Name.FromJsonGame(),
         GamePath = jsonObject.Game.Path,
         ProjectSettings = jsonObject.ProjectSettings?.ToDomain(),
-        SourceFiles = [.. jsonObject.SourceFiles.Select(SourceFile.FromJsonProject)],
-        GameFiles = [.. jsonObject.GameFiles.Select(GameFile.FromJson)]
+        SourceFiles = jsonObject.SourceFiles != null ? [.. jsonObject.SourceFiles.Select(SourceFile.FromJsonProject)] : [],
+        GameFiles = jsonObject.GameFiles != null ? [.. jsonObject.GameFiles.Select(GameFile.FromJson)] : [],
     };
 }

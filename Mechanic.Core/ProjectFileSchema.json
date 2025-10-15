@@ -114,7 +114,9 @@
               "DDS",
               "WEM",
               "PEX",
-              "PPJ"
+              "PPJ",
+              "NIF",
+              "MESH"
             ]
           }
         }
@@ -123,9 +125,7 @@
   },
   "required": [
     "id",
-    "game",
-    "sourceFiles",
-    "gameFiles"
+    "game"
   ],
   "$defs": {
     "fileIdentifier": {

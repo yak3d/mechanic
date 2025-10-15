@@ -1,5 +1,4 @@
 ﻿using JetBrains.Annotations;
-using Mechanic.Core.Models;
 using Mechanic.Core.Project.Models.Json;
 using Shouldly;
 using MechanicProject = Mechanic.Core.Models.MechanicProject;
@@ -21,6 +20,7 @@ public class MechanicProjectTest
         var input = new Project.Models.Json.MechanicProject
         {
             Id = projectId,
+            Namespace = "TEST",
             SourceFiles =
             [
                 new SourceFiles
@@ -38,6 +38,6 @@ public class MechanicProjectTest
         result.Id.ShouldBe(projectId);
         result.SourceFiles[0].Id.ToString().ShouldBe(sourceFileId1);
         result.SourceFiles[0].Path.ShouldBe(meshPath);
-        result.SourceFiles[0].FileType.ToString().ToUpper().ShouldBe(sourceFilesFileType.ToString());
+        result.SourceFiles[0].FileType.ToString().ToUpper(System.Globalization.CultureInfo.CurrentCulture).ShouldBe(sourceFilesFileType.ToString());
     }
 }

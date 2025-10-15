@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Mechanic.CLI.Contracts;
 using Mechanic.CLI.Models.Settings;
 using Mechanic.CLI.Services;
 using Mechanic.Core.Contracts;
@@ -7,34 +6,32 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Shouldly;
-using Xunit;
-using LanguageExt;
 using Mechanic.CLI.Errors;
 
 namespace Mechanic.CLI.Tests.Services;
 
 public class JsonLocalSettingsServiceTest
 {
-    private readonly Mock<IFileService> _mockFileService;
-    private readonly JsonLocalSettingsService _service;
-    private readonly string _expectedConfigPath;
+    private readonly Mock<IFileService> mockFileService;
+    private readonly JsonLocalSettingsService service;
+    private readonly string expectedConfigPath;
 
     public JsonLocalSettingsServiceTest()
     {
         Mock<ILogger<JsonLocalSettingsService>> mockLogger = new();
-        _mockFileService = new Mock<IFileService>();
+        this.mockFileService = new Mock<IFileService>();
         Mock<IOptions<LocalSettingsOptions>> mockOptions = new();
-        
+
         mockOptions.Setup(x => x.Value).Returns(new LocalSettingsOptions(
             SpriggitPath: null,
             PyroPath: null
         ));
-        
-        _expectedConfigPath = OperatingSystem.IsWindows()
+
+        this.expectedConfigPath = OperatingSystem.IsWindows()
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mechanic", "config", "config.json")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "mechanic", "config.json");
-        
-        _service = new JsonLocalSettingsService(mockLogger.Object, _mockFileService.Object, mockOptions.Object);
+
+        this.service = new JsonLocalSettingsService(mockLogger.Object, this.mockFileService.Object, mockOptions.Object);
     }
 
     #region ReadSettingAsync Tests
@@ -42,10 +39,10 @@ public class JsonLocalSettingsServiceTest
     [Fact]
     public async Task ReadSettingAsync_WhenFileDoesNotExist_ShouldReturnDefault()
     {
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ThrowsAsync(new FileNotFoundException());
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBeNull();
     }
@@ -53,10 +50,10 @@ public class JsonLocalSettingsServiceTest
     [Fact]
     public async Task ReadSettingAsync_WhenFileIsEmpty_ShouldReturnDefault()
     {
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(string.Empty);
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBeNull();
     }
@@ -64,10 +61,10 @@ public class JsonLocalSettingsServiceTest
     [Fact]
     public async Task ReadSettingAsync_WhenFileIsWhitespace_ShouldReturnDefault()
     {
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("   \n\t   ");
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBeNull();
     }
@@ -79,11 +76,11 @@ public class JsonLocalSettingsServiceTest
         {
             ["otherKey"] = "otherValue"
         });
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(jsonContent);
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBeNull();
     }
@@ -96,11 +93,11 @@ public class JsonLocalSettingsServiceTest
         {
             ["testKey"] = testValue
         });
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(jsonContent);
 
-        var result = await _service.ReadSettingAsync<JsonElement>("testKey");
+        var result = await this.service.ReadSettingAsync<JsonElement>("testKey");
 
         result.ValueKind.ShouldNotBe(JsonValueKind.Undefined);
         result.ValueKind.ShouldNotBe(JsonValueKind.Null);
@@ -115,11 +112,11 @@ public class JsonLocalSettingsServiceTest
         {
             ["testKey"] = serializedTestObject
         });
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(jsonContent);
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBe(serializedTestObject);
     }
@@ -127,10 +124,10 @@ public class JsonLocalSettingsServiceTest
     [Fact]
     public async Task ReadSettingAsync_WhenJsonIsCorrupted_ShouldReturnDefault()
     {
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{ invalid json content");
 
-        var result = await _service.ReadSettingAsync<string>("testKey");
+        var result = await this.service.ReadSettingAsync<string>("testKey");
 
         result.ShouldBeNull();
     }
@@ -141,15 +138,15 @@ public class JsonLocalSettingsServiceTest
     [InlineData(true, "boolKey")]
     public async Task ReadSettingAsync_WithDifferentTypes_ShouldReturnCorrectValues<T>(T expectedValue, string key)
     {
-        var jsonContent = JsonSerializer.Serialize(new Dictionary<string, object>
+        var jsonContent = JsonSerializer.Serialize(new Dictionary<string, object?>
         {
             [key] = expectedValue
         });
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(jsonContent);
 
-        var result = await _service.ReadSettingAsync<T>(key);
+        var result = await this.service.ReadSettingAsync<T>(key);
 
         result.ShouldBe(expectedValue);
     }
@@ -167,15 +164,15 @@ public class JsonLocalSettingsServiceTest
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mechanic", "config")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "mechanic");
 
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{}");
-        _mockFileService.Setup(x => x.DirectoryExists(expectedDirectory))
+        this.mockFileService.Setup(x => x.DirectoryExists(expectedDirectory))
             .ReturnsAsync(false);
 
-        var result = await _service.SaveSettingAsync(testKey, testValue);
+        var result = await this.service.SaveSettingAsync(testKey, testValue);
 
         result.IsNone.ShouldBeTrue();
-        _mockFileService.Verify(x => x.DirectoryExists(expectedDirectory), Times.Once);
+        this.mockFileService.Verify(x => x.DirectoryExists(expectedDirectory), Times.Once);
     }
 
     [Fact]
@@ -187,15 +184,15 @@ public class JsonLocalSettingsServiceTest
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mechanic", "config")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "mechanic");
 
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{}");
-        _mockFileService.Setup(x => x.DirectoryExists(expectedDirectory))
+        this.mockFileService.Setup(x => x.DirectoryExists(expectedDirectory))
             .ReturnsAsync(true);
 
-        var result = await _service.SaveSettingAsync(testKey, testValue);
+        var result = await this.service.SaveSettingAsync(testKey, testValue);
 
         result.IsNone.ShouldBeTrue();
-        _mockFileService.Verify(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()), Times.Once);
+        this.mockFileService.Verify(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -206,20 +203,20 @@ public class JsonLocalSettingsServiceTest
             ["existingKey"] = "existingValue"
         };
         var existingJson = JsonSerializer.Serialize(existingSettings);
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(existingJson);
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(true);
 
         var capturedJson = string.Empty;
-        _mockFileService.Setup(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()))
             .Callback<string, string>((_, content) => capturedJson = content);
 
-        var result = await _service.SaveSettingAsync("newKey", "newValue");
+        var result = await this.service.SaveSettingAsync("newKey", "newValue");
 
         result.IsNone.ShouldBeTrue();
-        _mockFileService.Verify(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()), Times.Once);
+        this.mockFileService.Verify(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()), Times.Once);
         capturedJson.ShouldNotBeEmpty();
     }
 
@@ -228,20 +225,20 @@ public class JsonLocalSettingsServiceTest
     {
         var testKey = "testKey";
         var testValue = "testValue";
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ThrowsAsync(new UnauthorizedAccessException("Access denied to config"));
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(true);
-        _mockFileService.Setup(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()))
             .ThrowsAsync(new UnauthorizedAccessException("Write access denied"));
 
-        var result = await _service.SaveSettingAsync(testKey, testValue);
+        var result = await this.service.SaveSettingAsync(testKey, testValue);
 
         result.IsSome.ShouldBeTrue();
         result.Match(
-            Some: error => error.ShouldBeOfType<FailedToSaveSettingsError>(),
-            None: () => throw new Exception("Expected error but got None")
+            Some: error => Assert.IsType<FailedToSaveSettingsError>(error),
+            None: () => Assert.Fail()
         );
     }
 
@@ -253,16 +250,16 @@ public class JsonLocalSettingsServiceTest
     public async Task SaveSettingAsync_WithDifferentTypes_ShouldSerializeCorrectly_AndReturnNone<T>(T value)
     {
         var testKey = "testKey";
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{}");
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(true);
 
-        var result = await _service.SaveSettingAsync(testKey, value);
+        var result = await this.service.SaveSettingAsync(testKey, value);
 
         result.IsNone.ShouldBeTrue();
-        _mockFileService.Verify(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()), Times.Once);
+        this.mockFileService.Verify(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -274,19 +271,19 @@ public class JsonLocalSettingsServiceTest
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mechanic", "config")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "mechanic");
 
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{}");
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(false);
-        _mockFileService.Setup(x => x.CreateDirectoryAsync(expectedDirectory))
+        this.mockFileService.Setup(x => x.CreateDirectoryAsync(expectedDirectory))
             .ThrowsAsync(new UnauthorizedAccessException("Cannot create directory"));
 
-        var result = await _service.SaveSettingAsync(testKey, testValue);
+        var result = await this.service.SaveSettingAsync(testKey, testValue);
 
         result.IsSome.ShouldBeTrue();
         result.Match(
             Some: error => error.ShouldBeOfType<FailedToMakeSettingsDirectoryError>(),
-            None: () => throw new Exception("Expected error but got None")
+            None: () => Assert.Fail()
         );
     }
 
@@ -300,26 +297,26 @@ public class JsonLocalSettingsServiceTest
         var testKey = "integrationTestKey";
         var testValue = "simple test value";
         var settings = new Dictionary<string, object>();
-        
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(true);
-        
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync(() => JsonSerializer.Serialize(settings));
-        
-        _mockFileService.Setup(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()))
-            .Callback<string, string>((_, content) => 
+
+        this.mockFileService.Setup(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()))
+            .Callback<string, string>((_, _) =>
             {
                 settings[testKey] = JsonSerializer.Serialize(testValue);
             });
 
-        var saveResult = await _service.SaveSettingAsync(testKey, testValue);
-        var readResult = await _service.ReadSettingAsync<string>(testKey);
+        var saveResult = await this.service.SaveSettingAsync(testKey, testValue);
+        var readResult = await this.service.ReadSettingAsync<string>(testKey);
 
         saveResult.IsNone.ShouldBeTrue();
         readResult.ShouldBe($"\"{testValue}\"");
-        _mockFileService.Verify(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()), Times.Once);
-        _mockFileService.Verify(x => x.ReadAllText(_expectedConfigPath), Times.AtLeastOnce);
+        this.mockFileService.Verify(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()), Times.Once);
+        this.mockFileService.Verify(x => x.ReadAllText(this.expectedConfigPath), Times.AtLeastOnce);
     }
 
     [Fact]
@@ -327,23 +324,23 @@ public class JsonLocalSettingsServiceTest
     {
         var testKey = "failureTestKey";
         var testValue = "test value that shall not pass";
-        
-        _mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
+
+        this.mockFileService.Setup(x => x.DirectoryExists(It.IsAny<string>()))
             .ReturnsAsync(true);
-        _mockFileService.Setup(x => x.ReadAllText(_expectedConfigPath))
+        this.mockFileService.Setup(x => x.ReadAllText(this.expectedConfigPath))
             .ReturnsAsync("{}");
-        _mockFileService.Setup(x => x.WriteAllText(_expectedConfigPath, It.IsAny<string>()))
+        this.mockFileService.Setup(x => x.WriteAllText(this.expectedConfigPath, It.IsAny<string>()))
             .ThrowsAsync(new IOException("Unable to write to file"));
 
-        var saveResult = await _service.SaveSettingAsync(testKey, testValue);
-        
+        var saveResult = await this.service.SaveSettingAsync(testKey, testValue);
+
         saveResult.IsSome.ShouldBeTrue();
         saveResult.Match(
-            Some: error => 
+            Some: error =>
             {
                 error.ShouldBeOfType<FailedToSaveSettingsError>();
             },
-            None: () => throw new Exception("Expected error but operation succeeded")
+            None: () => Assert.Fail()
         );
     }
 

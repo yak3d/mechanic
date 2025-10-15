@@ -12,17 +12,16 @@ namespace Mechanic.Core.Tests.Services;
 
 public class PyroServiceTest
 {
-    private readonly Mock<ILogger<PyroService>> _mockLogger;
-    private readonly Mock<IXmlSerializer> _mockXmlSerializer;
-    private readonly Mock<IFileService> _mockFileService;
-    private readonly PyroService _pyroService;
+    private readonly Mock<IXmlSerializer> mockXmlSerializer;
+    private readonly Mock<IFileService> mockFileService;
+    private readonly PyroService pyroService;
 
     public PyroServiceTest()
     {
-        _mockLogger = new Mock<ILogger<PyroService>>();
-        _mockXmlSerializer = new Mock<IXmlSerializer>();
-        _mockFileService = new Mock<IFileService>();
-        _pyroService = new PyroService(_mockLogger.Object, _mockXmlSerializer.Object, _mockFileService.Object);
+        Mock<ILogger<PyroService>> mockLogger = new();
+        this.mockXmlSerializer = new Mock<IXmlSerializer>();
+        this.mockFileService = new Mock<IFileService>();
+        this.pyroService = new PyroService(mockLogger.Object, this.mockXmlSerializer.Object, this.mockFileService.Object);
     }
 
     [Theory]
@@ -43,13 +42,13 @@ public class PyroServiceTest
 
         mockFactory.Setup(factory => factory.CreateProjectAsync(projectName, namespaceName, gamePath))
             .ReturnsAsync(mockProject);
-        _mockXmlSerializer.Setup(serializer => serializer.SerializeAsync(mockProject)).Returns(Task.FromResult(expectedXml));
-        
-        var result = await _pyroService.CreatePyroProjectAsync(gameName, projectName, namespaceName, gamePath);
-        
+        this.mockXmlSerializer.Setup(serializer => serializer.SerializeAsync(mockProject)).Returns(Task.FromResult(expectedXml));
+
+        var result = await this.pyroService.CreatePyroProjectAsync(gameName, projectName, namespaceName, gamePath);
+
         result.IsRight.ShouldBeTrue();
         result.IfRight(filePath => filePath.ShouldBe(expectedFilePath));
-        _mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        this.mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     [Theory]
@@ -61,13 +60,13 @@ public class PyroServiceTest
         var projectName = "MyOldProject";
         var projectNamespace = "YeOldeNamespace";
         var gamePath = @"C:\Games\TestGame";
-        
-        var result = await _pyroService.CreatePyroProjectAsync(gameName, projectName, projectNamespace, gamePath);
+
+        var result = await this.pyroService.CreatePyroProjectAsync(gameName, projectName, projectNamespace, gamePath);
 
         result.IsLeft.ShouldBeTrue();
         result.IfLeft(err => err.ShouldBeOfType<GameUnsupportedInPyro>());
-        
-        _mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+
+        this.mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -80,32 +79,31 @@ public class PyroServiceTest
 
         var mockProject = new PapyrusProject();
         var mockFactory = new Mock<IPyroProjectFactory>();
-        
+
         mockFactory.Setup(f => f.CreateProjectAsync(projectName, namespaceName, gamePath))
             .ReturnsAsync(mockProject);
-        
-        _mockXmlSerializer.Setup(s => s.SerializeAsync(It.IsAny<PapyrusProject>()))
+
+        this.mockXmlSerializer.Setup(s => s.SerializeAsync(It.IsAny<PapyrusProject>()))
             .ThrowsAsync(new InvalidOperationException("XML serialization failed"));
-        
-        var result = await _pyroService.CreatePyroProjectAsync(gameName, projectName, namespaceName, gamePath);
+
+        var result = await this.pyroService.CreatePyroProjectAsync(gameName, projectName, namespaceName, gamePath);
 
         result.IsLeft.ShouldBeTrue();
         result.IfLeft(error => error.ShouldBeOfType<UnableToSerializeProjectToXml>());
-        
-        _mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+
+        this.mockFileService.Verify(fs => fs.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
-    public async Task CreatePyroProjectAsync_WhenFactoryCreationFails_ShouldReturnFactoryError()
+    public Task CreatePyroProjectAsync_WhenFactoryCreationFails_ShouldReturnFactoryError()
     {
-        var gameName = GameName.Tes5Skyrim;
-        var projectName = "TestProject";
-        var namespaceName = "TestNamespace";
-        var gamePath = @"C:\Games\Skyrim";
-        
+        const string projectName = "TestProject";
+        const string namespaceName = "TestNamespace";
+        const string gamePath = @"C:\Games\Skyrim";
+
         var mockFactory = new Mock<IPyroProjectFactory>();
         mockFactory.Setup(f => f.CreateProjectAsync(projectName, namespaceName, gamePath))
             .ThrowsAsync(new InvalidOperationException("Failed to create Factory"));
-        
+        return Task.CompletedTask;
     }
 }

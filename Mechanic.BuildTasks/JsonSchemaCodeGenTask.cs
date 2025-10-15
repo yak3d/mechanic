@@ -9,10 +9,10 @@ namespace Mechanic.BuildTasks;
 public class JsonSchemaCodeGenTask : Task
 {
     [Required]
-    public string SchemaFile { get; set; }
+    public required string SchemaFile { get; set; }
 
     [Required]
-    public string OutputFile { get; set; }
+    public required string OutputFile { get; set; }
 
     public string Namespace { get; set; } = "Generated";
     public string ClassStyle { get; set; } = "Poco";
@@ -60,13 +60,13 @@ public class JsonSchemaCodeGenTask : Task
 
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
     }
 
-    private CSharpClassStyle ParseClassStyle(string classStyle)
+    private static CSharpClassStyle ParseClassStyle(string classStyle)
     {
         return classStyle?.ToLowerInvariant() switch
         {

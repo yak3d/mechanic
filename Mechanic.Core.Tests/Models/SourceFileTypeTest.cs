@@ -52,7 +52,7 @@ public class SourceFileTypeTest
     {
         var defaultValue = default(SourceFilesFileType);
 
-        if (Enum.IsDefined(typeof(SourceFilesFileType), defaultValue))
+        if (Enum.IsDefined(defaultValue))
         {
             Should.NotThrow(() => defaultValue.ToSourceFileType());
         }
@@ -97,7 +97,7 @@ public class SourceFileTypeTest
     {
         var defaultValue = default(SourceFileType);
 
-        if (Enum.IsDefined(typeof(SourceFileType), defaultValue))
+        if (Enum.IsDefined(defaultValue))
         {
             Should.NotThrow(() => defaultValue.ToJson());
         }

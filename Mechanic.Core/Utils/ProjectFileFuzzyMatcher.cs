@@ -1,7 +1,7 @@
-﻿using FuzzySharp;
-using Mechanic.CLI.Models;
+﻿namespace Mechanic.Core.Utils;
 
-namespace Mechanic.CLI.Utils;
+using FuzzySharp;
+using Models;
 
 public static class ProjectFileFuzzyMatcher
 {
@@ -13,9 +13,7 @@ public static class ProjectFileFuzzyMatcher
     /// <typeparam name="T">The type of the file, should be an inheritor of ProjectFile</typeparam>
     /// <returns>An IEnumerable of the matching files and ordered by their score</returns>
     public static IEnumerable<ScoredProjectFile<T>> FuzzyMatch<T>(IEnumerable<T> files, string pathToMatch) where T : ProjectFile => files
-        .Select(gf => new ScoredProjectFile<T>(gf, Fuzz.Ratio(pathToMatch, Path.GetFileNameWithoutExtension(gf.Path))))
+        .Select(gf => new ScoredProjectFile<T>(gf, Fuzz.Ratio(pathToMatch, Path.GetFileNameWithoutExtension((string?)gf.Path))))
         .Where(match => match.Score >= 70)
         .OrderByDescending(match => match.Score);
 }
-
-public record ScoredProjectFile<T>(T File, int Score) where T : ProjectFile;

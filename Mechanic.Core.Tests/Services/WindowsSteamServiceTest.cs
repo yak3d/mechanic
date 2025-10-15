@@ -10,30 +10,30 @@ namespace Mechanic.Core.Tests.Services;
 
 public class WindowsSteamServiceTest : IDisposable
 {
-    private readonly Mock<ILogger<WindowsSteamService>> _mockLogger;
-    private readonly Mock<IFileService> _mockFileService;
-    private readonly WindowsSteamService _steamService;
-    private readonly string _testDirectory;
-    private readonly Mock<IRegistryService> _mockRegistry;
+    private readonly Mock<IFileService> mockFileService;
+    private readonly WindowsSteamService steamService;
+    private readonly string testDirectory;
+    private readonly Mock<IRegistryService> mockRegistry;
     private const string SteamRegistryKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam";
     private const string SteamRegistryKey64Bit = @"HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam";
     private const string DefaultSteamDirectory = @"C:\Program Files (x86)\Steam";
 
     public WindowsSteamServiceTest()
     {
-        _mockLogger = new Mock<ILogger<WindowsSteamService>>();
-        _mockFileService = new Mock<IFileService>();
-        _testDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        _mockRegistry = new Mock<IRegistryService>();
-        Directory.CreateDirectory(_testDirectory);
-        _steamService = new WindowsSteamService(_mockLogger.Object, _mockRegistry.Object, _mockFileService.Object);
+        Mock<ILogger<WindowsSteamService>> mockLogger = new();
+        this.mockFileService = new Mock<IFileService>();
+        this.testDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        this.mockRegistry = new Mock<IRegistryService>();
+        Directory.CreateDirectory(this.testDirectory);
+        this.steamService = new WindowsSteamService(mockLogger.Object, this.mockRegistry.Object, this.mockFileService.Object);
     }
 
     public void Dispose()
     {
-        if (Directory.Exists(_testDirectory))
+        GC.SuppressFinalize(this);
+        if (Directory.Exists(this.testDirectory))
         {
-            Directory.Delete(_testDirectory, true);
+            Directory.Delete(this.testDirectory, true);
         }
     }
 
@@ -43,9 +43,9 @@ public class WindowsSteamServiceTest : IDisposable
     public void GetSteamInstallPath_WhenWow6432NodeKeyExists_ReturnsRegistryPath()
     {
         var expectedPath = @"C:\Program Files (x86)\Steam";
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null)).Returns(expectedPath);
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null)).Returns(expectedPath);
 
-        var result = _steamService.GetSteamInstallPath();
+        var result = this.steamService.GetSteamInstallPath();
 
         result.ShouldBe(expectedPath);
     }
@@ -54,12 +54,12 @@ public class WindowsSteamServiceTest : IDisposable
     public void GetSteamInstallPath_When64BitKeyExists_And32BitDoesNot_Returns64BitPath()
     {
         var expected64BitPath = @"C:\Program Files\Steam";
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
             .Returns((string?)null);
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey64Bit, "InstallPath", null))
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey64Bit, "InstallPath", null))
             .Returns(expected64BitPath);
 
-        var result = _steamService.GetSteamInstallPath();
+        var result = this.steamService.GetSteamInstallPath();
 
         result.ShouldBe(expected64BitPath);
     }
@@ -67,10 +67,10 @@ public class WindowsSteamServiceTest : IDisposable
     [Fact]
     public void GetSteamInstallPath_WhenNoRegistryKeysExist_ReturnsDefaultPath()
     {
-        _mockRegistry.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object>()))
+        this.mockRegistry.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object>()))
             .Returns((string?)null);
 
-        var result = _steamService.GetSteamInstallPath();
+        var result = this.steamService.GetSteamInstallPath();
 
         result.ShouldBe(DefaultSteamDirectory);
     }
@@ -80,10 +80,10 @@ public class WindowsSteamServiceTest : IDisposable
     [Fact]
     public async Task GetInstalledGames_WhenNoLibraryPaths_ReturnsEmptyList()
     {
-        _mockRegistry.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object>()))
+        this.mockRegistry.Setup(service => service.GetValue(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<object>()))
             .Returns((string?)null);
 
-        var result = await _steamService.GetInstalledGamesAsync();
+        var result = await this.steamService.GetInstalledGamesAsync();
 
         result.IsLeft.ShouldBeTrue();
     }
@@ -104,16 +104,16 @@ public class WindowsSteamServiceTest : IDisposable
         Directory.CreateDirectory(commonPath);
         Directory.CreateDirectory(Path.Combine(commonPath, "testgame"));
 
-        _mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
+        this.mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
             .Returns(steamPath);
-        _mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath, "libraryfolders.vdf")))
+        this.mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath, "libraryfolders.vdf")))
             .Returns(Task.FromResult(libraryContent));
-        _mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath, "appmanifest_*.acf"))
+        this.mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath, "appmanifest_*.acf"))
             .Returns(Task.FromResult((string[])[manifestFile]));
-        _mockFileService.Setup(service => service.ReadAllText(manifestFile)).Returns(Task.FromResult(manifestContent));
+        this.mockFileService.Setup(service => service.ReadAllText(manifestFile)).Returns(Task.FromResult(manifestContent));
 
-        var result = await _steamService.GetInstalledGamesAsync();
+        var result = await this.steamService.GetInstalledGamesAsync();
 
         result.IsRight.ShouldBeTrue();
         result.IfRight(games =>
@@ -144,7 +144,7 @@ public class WindowsSteamServiceTest : IDisposable
                      		""path""		""{steamPath2.Replace("\\", "\\\\")}""
                      	}}
                      }}
-                     """""; ;
+                     """"";
 
         var manifestFile1 = Path.Combine(steamAppsPath1, "appmanifest_12345.acf");
         var manifestFileContents1 = VdfTestUtils.BuildFullAppState("22330", "Game One", "testgame");
@@ -154,21 +154,21 @@ public class WindowsSteamServiceTest : IDisposable
         var libraryFoldersPath = Path.Combine(steamPath1, "steamapps", "libraryfolders.vdf");
         File.WriteAllText(libraryFoldersPath, libraryFoldersContent);
 
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
             .Returns(steamPath1);
-        _mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath1, "libraryfolders.vdf")))
+        this.mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath1, "libraryfolders.vdf")))
             .Returns(Task.FromResult(libraryFoldersContent));
-        _mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
-        _mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath1, "appmanifest_*.acf"))
+        this.mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+        this.mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath1, "appmanifest_*.acf"))
             .Returns(Task.FromResult((string[])[manifestFile1]));
-        _mockFileService.Setup(service => service.ReadAllText(manifestFile1)).Returns(Task.FromResult(manifestFileContents1));
-        _mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath2, "libraryfolders.vdf")))
+        this.mockFileService.Setup(service => service.ReadAllText(manifestFile1)).Returns(Task.FromResult(manifestFileContents1));
+        this.mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath2, "libraryfolders.vdf")))
             .Returns(Task.FromResult(libraryFoldersContent));
-        _mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath2, "appmanifest_*.acf"))
+        this.mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath2, "appmanifest_*.acf"))
             .Returns(Task.FromResult((string[])[manifestFile2]));
-        _mockFileService.Setup(service => service.ReadAllText(manifestFile2)).Returns(Task.FromResult(manifestFileContents2));
+        this.mockFileService.Setup(service => service.ReadAllText(manifestFile2)).Returns(Task.FromResult(manifestFileContents2));
 
-        var result = await _steamService.GetInstalledGamesAsync();
+        var result = await this.steamService.GetInstalledGamesAsync();
 
         result.IsRight.ShouldBeTrue();
         result.IfRight(games =>
@@ -193,19 +193,19 @@ public class WindowsSteamServiceTest : IDisposable
         Directory.CreateDirectory(commonPath);
         Directory.CreateDirectory(Path.Combine(commonPath, "testgame"));
 
-        _mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
+        this.mockFileService.Setup(service => service.DirectoryExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
             .Returns(steamPath);
-        _mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath, "libraryfolders.vdf")))
+        this.mockFileService.Setup(service => service.ReadAllText(Path.Combine(steamAppsPath, "libraryfolders.vdf")))
             .Returns(Task.FromResult(libraryContent));
-        _mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath, "appmanifest_*.acf"))
+        this.mockFileService.Setup(service => service.GetFilesFromDirectoryAsync(steamAppsPath, "appmanifest_*.acf"))
             .Returns(Task.FromResult((string[])[manifestFile]));
-        _mockFileService.Setup(service => service.ReadAllText(manifestFile)).Returns(Task.FromResult("{ corrupted vdf content }"));
+        this.mockFileService.Setup(service => service.ReadAllText(manifestFile)).Returns(Task.FromResult("{ corrupted vdf content }"));
 
-        _mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
+        this.mockRegistry.Setup(service => service.GetValue(SteamRegistryKey, "InstallPath", null))
             .Returns(steamPath);
 
-        var result = await _steamService.GetInstalledGamesAsync();
+        var result = await this.steamService.GetInstalledGamesAsync();
 
         result.IsLeft.ShouldBeTrue();
         result.IfLeft(error => error.ShouldBeOfType<SteamManifestError.VdfParseError>());
