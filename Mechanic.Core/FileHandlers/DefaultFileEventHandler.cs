@@ -5,7 +5,6 @@ using Infrastructure.Logging;
 using Infrastructure.Observer;
 using Microsoft.Extensions.Logging;
 using Models.FileWatcher;
-using Services;
 
 public class DefaultFileEventHandler(ILogger<DefaultFileEventHandler> logger, IProjectService projectService) : IFileEventHandler, IObservable<FileEvent>
 {
